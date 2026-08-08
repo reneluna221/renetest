@@ -15,7 +15,7 @@ body{min-height:100dvh}
 button,a{font:inherit}
 .camera-shell{position:relative;width:100%;height:100dvh;overflow:hidden;background:#050608}
 #video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#050608}
-#analysisCanvas,#captureCanvas{display:none}
+#analysisCanvas,#captureCanvas,#ocrCanvas{display:none}
 .topbar{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 14px) 18px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,0))}
 .brand{font-size:14px;font-weight:750;letter-spacing:.12em}.sub{margin-top:4px;color:var(--muted);font-size:12px;letter-spacing:.05em}
 .ghost-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);font-size:20px}
@@ -36,7 +36,7 @@ button,a{font:inherit}
 @media(min-width:700px){.camera-shell{max-width:520px;margin:0 auto}.sheet-card{max-width:520px;margin:0 auto}}
 
   </style>
-  <title>LXR Card Camera</title>
+  <title>LXR Card Camera · Pokémon TCG Only</title>
 </head>
 <body>
   <main id="app">
@@ -44,11 +44,12 @@ button,a{font:inherit}
       <video id="video" autoplay muted playsinline></video>
       <canvas id="analysisCanvas" aria-hidden="true"></canvas>
       <canvas id="captureCanvas" aria-hidden="true"></canvas>
+      <canvas id="ocrCanvas" aria-hidden="true"></canvas>
 
       <div class="topbar">
         <div>
           <div class="brand">LXR CARD CAMERA</div>
-          <div class="sub" id="stepLabel">FRONT · VALIDATOR v0.1</div>
+          <div class="sub" id="stepLabel">FRONT · POKÉMON-ONLY v0.3</div>
         </div>
         <button id="helpBtn" class="ghost-btn" type="button" aria-label="Ayuda">?</button>
       </div>
@@ -72,7 +73,8 @@ button,a{font:inherit}
 
         <div class="metrics-grid" aria-live="polite">
           <div class="metric"><span>Encuadre</span><strong id="mFraming">—</strong></div>
-          <div class="metric"><span>Proporción</span><strong id="mRatio">—</strong></div>
+          <div class="metric"><span>Carta física</span><strong id="mRatio">—</strong></div>
+          <div class="metric"><span>Pokémon ID</span><strong id="mPokemon">—</strong></div>
           <div class="metric"><span>Enfoque</span><strong id="mSharp">—</strong></div>
           <div class="metric"><span>Exposición</span><strong id="mExposure">—</strong></div>
           <div class="metric"><span>Glare</span><strong id="mGlare">—</strong></div>
@@ -119,7 +121,7 @@ button,a{font:inherit}
           <li>Mantén el iPhone perpendicular a la carta y llena el marco guía.</li>
           <li>Cuando QUALITY llegue al umbral y se mantenga estable, Auto Capture puede disparar solo.</li>
         </ol>
-        <p class="fineprint">Esta v0.1 valida la calidad fotográfica. No asigna un grado PSA y no sustituye inspección física.</p>
+        <p class="fineprint">Esta v0.3 exige detectar una carta física y además evidencia de que corresponde a Pokémon TCG. Compatible con cartas en inglés, japonés y chino usando señales visuales y marcadores universales como HP, numeración y líneas legales. No verifica autenticidad frente a falsificaciones sofisticadas y no asigna un grado PSA.</p>
       </div>
     </section>
   </main>
@@ -130,12 +132,17 @@ button,a{font:inherit}
 
   const CARD_RATIO = 63 / 88;
   const ANALYZE_EVERY_MS = 220;
+  const ANALYSIS_PAD = 0.08;
   const READY_STREAK_REQUIRED = 5;
   const STRICT_READY_SCORE = 88;
+  const OCR_INTERVAL_MS = 2400;
+  const OCR_MIN_SHARPNESS = 58;
+  const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js';
 
   const video = document.getElementById('video');
   const analysisCanvas = document.getElementById('analysisCanvas');
   const captureCanvas = document.getElementById('captureCanvas');
+  const ocrCanvas = document.getElementById('ocrCanvas');
   const guide = document.getElementById('guide');
   const startBtn = document.getElementById('startBtn');
   const captureBtn = document.getElementById('captureBtn');
@@ -155,7 +162,7 @@ button,a{font:inherit}
   const helpSheet = document.getElementById('helpSheet');
 
   const metricEls = {
-    framing: document.getElementById('mFraming'), ratio: document.getElementById('mRatio'),
+    framing: document.getElementById('mFraming'), ratio: document.getElementById('mRatio'), pokemon: document.getElementById('mPokemon'),
     sharp: document.getElementById('mSharp'), exposure: document.getElementById('mExposure'),
     glare: document.getElementById('mGlare'), stable: document.getElementById('mStable')
   };
@@ -169,6 +176,14 @@ button,a{font:inherit}
   let latestMetrics = null;
   let capturedBlob = null;
   let capturedUrl = null;
+  let pokemonOcrScore = 0;
+  let pokemonOcrText = '';
+  let pokemonOcrStatus = 'WAIT';
+  let pokemonOcrSignals = [];
+  let ocrBusy = false;
+  let lastOcrAt = 0;
+  let ocrWorkerPromise = null;
+  let tesseractScriptPromise = null;
 
   function setMetric(el, text, state='') {
     el.textContent = text;
@@ -224,6 +239,7 @@ button,a{font:inherit}
       cameraMessage.textContent = 'Alinea la carta con el marco';
       previousMini = null;
       readyStreak = 0;
+      pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';lastOcrAt=0;
       timer = setInterval(analyzeFrame, ANALYZE_EVERY_MS);
     } catch (err) {
       console.error(err);
@@ -251,7 +267,7 @@ button,a{font:inherit}
     analysisCanvas.height = H;
     const ctx = analysisCanvas.getContext('2d', { willReadFrequently: true });
 
-    const pad = 0.08;
+    const pad = ANALYSIS_PAD;
     const sx = clamp(r.x - r.w * pad, 0, video.videoWidth - 1);
     const sy = clamp(r.y - r.h * pad, 0, video.videoHeight - 1);
     const sw = clamp(r.w * (1 + 2*pad), 1, video.videoWidth - sx);
@@ -261,6 +277,141 @@ button,a{font:inherit}
     const metrics = computeMetrics(img.data, W, H);
     latestMetrics = metrics;
     renderMetrics(metrics);
+    maybeRunPokemonOCR(metrics);
+  }
+
+  function regionVisualStats(data,w,h,x0,y0,x1,y1) {
+    x0=clamp(Math.round(x0),0,w-2); y0=clamp(Math.round(y0),0,h-2);
+    x1=clamp(Math.round(x1),x0+1,w-1); y1=clamp(Math.round(y1),y0+1,h-1);
+    let n=0, satSum=0, colorSum=0, edges=0, blue=0, yellow=0;
+    for(let y=y0;y<y1;y+=2){
+      for(let x=x0;x<x1;x+=2){
+        const i=(y*w+x)*4;
+        const r=data[i],g=data[i+1],b=data[i+2];
+        const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+        const sat=mx?((mx-mn)/mx):0;
+        satSum+=sat; colorSum+=(mx-mn);
+        if(b>95 && b>r*1.18 && b>g*1.08 && sat>.28) blue++;
+        if(r>145 && g>112 && b<125 && r>b*1.25 && sat>.30) yellow++;
+        const j=(y*w+Math.min(w-1,x+2))*4;
+        const k=(Math.min(h-1,y+2)*w+x)*4;
+        const y0v=.2126*r+.7152*g+.0722*b;
+        const yx=.2126*data[j]+.7152*data[j+1]+.0722*data[j+2];
+        const yy=.2126*data[k]+.7152*data[k+1]+.0722*data[k+2];
+        if(Math.abs(y0v-yx)+Math.abs(y0v-yy)>38) edges++;
+        n++;
+      }
+    }
+    return n?{sat:satSum/n,color:colorSum/n,edgeDensity:edges/n,bluePct:blue/n,yellowPct:yellow/n}:{sat:0,color:0,edgeDensity:0,bluePct:0,yellowPct:0};
+  }
+
+  function computePokemonVisual(data,w,h,edge) {
+    if(!edge?.found) return {score:0, details:{}};
+    const L=edge.L.median,R=edge.R.median,T=edge.T.median,B=edge.B.median;
+    const cw=R-L,ch=B-T;
+    if(cw<=4||ch<=4) return {score:0,details:{}};
+    if(side==='BACK'){
+      const whole=regionVisualStats(data,w,h,L,T,R,B);
+      const blueScore=clamp((whole.bluePct-.06)/.24*100,0,100);
+      const yellowScore=clamp((whole.yellowPct-.004)/.045*100,0,100);
+      const satScore=clamp((whole.sat-.18)/.32*100,0,100);
+      const score=clamp(blueScore*.46+yellowScore*.24+satScore*.30,0,100);
+      return {score,details:{whole}};
+    }
+    const top=regionVisualStats(data,w,h,L+cw*.05,T+ch*.03,R-cw*.05,T+ch*.20);
+    const art=regionVisualStats(data,w,h,L+cw*.06,T+ch*.18,R-cw*.06,T+ch*.60);
+    const lower=regionVisualStats(data,w,h,L+cw*.05,T+ch*.57,R-cw*.05,T+ch*.92);
+    const footer=regionVisualStats(data,w,h,L+cw*.04,T+ch*.88,R-cw*.04,T+ch*.985);
+    const topText=clamp((top.edgeDensity-.055)/.16*100,0,100);
+    const artComplexity=clamp((art.color-18)/45*100,0,100);
+    const lowerText=clamp((lower.edgeDensity-.07)/.18*100,0,100);
+    const footerText=clamp((footer.edgeDensity-.055)/.18*100,0,100);
+    const score=clamp(topText*.18+artComplexity*.27+lowerText*.33+footerText*.22,0,100);
+    return {score,details:{top,art,lower,footer}};
+  }
+
+  function normalizeOcr(text){
+    return (text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9/©®._\-\s]/g,' ');
+  }
+
+  function scorePokemonOcr(text, currentSide){
+    const t=normalizeOcr(text);
+    let score=0; const signals=[];
+    const add=(pts,name)=>{score+=pts;signals.push(name)};
+    if(/POK\s*[EÉ]?\s*MON|POKEMON/.test(t)) add(currentSide==='BACK'?70:32,'POKÉMON');
+    if(currentSide==='FRONT'){
+      if(/\bHP\s*\d{2,3}\b/.test(t)) add(32,'HP');
+      if(/\b\d{1,3}\s*\/\s*\d{2,3}\b/.test(t)) add(32,'card number');
+      if(/\b(?:SV|SWSH|SM|XY|BW|DP)[A-Z0-9\- ]{0,6}\d{1,3}\b/.test(t)) add(24,'set/promo code');
+      let legal=0;
+      for(const re of [/NINTENDO/,/CREATURES/,/GAME\s*FREAK/,/POKEMON/]) if(re.test(t)) legal++;
+      if(legal>=1) add(Math.min(28,10+legal*6),'legal line');
+      if(/\bTRAINER\b|\bENERGY\b|\bBASIC\b|\bSTAGE\s*[12]?\b/.test(t)) add(12,'TCG label');
+    }
+    return {score:clamp(score,0,100),signals,text:t.slice(0,600)};
+  }
+
+  function loadTesseractScript(){
+    if(window.Tesseract) return Promise.resolve();
+    if(tesseractScriptPromise) return tesseractScriptPromise;
+    tesseractScriptPromise=new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src=TESSERACT_URL; s.async=true;
+      s.onload=()=>resolve(); s.onerror=()=>reject(new Error('No se pudo cargar OCR'));
+      document.head.appendChild(s);
+    });
+    return tesseractScriptPromise;
+  }
+
+  async function getOcrWorker(){
+    await loadTesseractScript();
+    if(!ocrWorkerPromise){
+      pokemonOcrStatus='LOAD';
+      ocrWorkerPromise=window.Tesseract.createWorker('eng',1,{logger:m=>{
+        if(m.status==='loading language traineddata'||m.status==='initializing api') pokemonOcrStatus='LOAD';
+      }});
+    }
+    return ocrWorkerPromise;
+  }
+
+  function buildOcrComposite(edge){
+    const L=edge.L.median,R=edge.R.median,T=edge.T.median,B=edge.B.median;
+    const cw=Math.max(1,R-L), ch=Math.max(1,B-T);
+    const outW=720;
+    if(side==='BACK'){
+      const outH=Math.round(outW*(ch/cw));
+      ocrCanvas.width=outW;ocrCanvas.height=outH;
+      const c=ocrCanvas.getContext('2d');
+      c.drawImage(analysisCanvas,L,T,cw,ch,0,0,outW,outH);
+      return ocrCanvas;
+    }
+    const stripH=ch*.23;
+    const outStripH=Math.round(outW*(stripH/cw));
+    ocrCanvas.width=outW;ocrCanvas.height=outStripH*2+16;
+    const c=ocrCanvas.getContext('2d');
+    c.fillStyle='white';c.fillRect(0,0,ocrCanvas.width,ocrCanvas.height);
+    c.drawImage(analysisCanvas,L,T,cw,stripH,0,0,outW,outStripH);
+    c.drawImage(analysisCanvas,L,B-stripH,cw,stripH,0,outStripH+16,outW,outStripH);
+    return ocrCanvas;
+  }
+
+  async function maybeRunPokemonOCR(m){
+    const now=Date.now();
+    if(ocrBusy || now-lastOcrAt<OCR_INTERVAL_MS || !m?.edge?.found) return;
+    if(m.cardScore<70 || m.sharpScore<OCR_MIN_SHARPNESS || m.motion<58) return;
+    ocrBusy=true; lastOcrAt=now; pokemonOcrStatus='SCAN';
+    try{
+      const worker=await getOcrWorker();
+      const source=buildOcrComposite(m.edge);
+      const result=await worker.recognize(source);
+      const scored=scorePokemonOcr(result?.data?.text||'',side);
+      pokemonOcrScore=scored.score; pokemonOcrSignals=scored.signals; pokemonOcrText=scored.text;
+      pokemonOcrStatus='DONE';
+    }catch(err){
+      console.error(err); pokemonOcrStatus='ERROR'; pokemonOcrScore=0; pokemonOcrSignals=[];
+    }finally{
+      ocrBusy=false;
+    }
   }
 
   function computeMetrics(data, w, h) {
@@ -286,10 +437,19 @@ button,a{font:inherit}
     const sharpVar=Math.max(0,lapSq/lapN-lapMean*lapMean);
     const sharpScore=clamp((Math.log10(sharpVar+1)-1.55)/1.25*100,0,100);
 
-    const edge = detectGuideEdges(gray,w,h);
-    const expectedRatio = CARD_RATIO;
-    const ratioScore = edge.found ? clamp(100 - Math.abs(edge.ratio-expectedRatio)/expectedRatio*500,0,100) : 35;
-    const framingScore = edge.found ? clamp(100 - edge.fitError*500,0,100) : 30;
+    const edge = detectCardGeometry(gray,w,h);
+    const ratioScore = edge.found
+      ? clamp(100 - Math.abs(edge.ratio-CARD_RATIO)/CARD_RATIO*520,0,100)
+      : 0;
+    const framingScore = edge.found
+      ? clamp(100 - edge.fitError*620,0,100)
+      : 0;
+    const cardScore = edge.cardScore;
+    const pokemonVisual = computePokemonVisual(data,w,h,edge);
+    const pokemonScore = clamp(pokemonVisual.score*0.48 + pokemonOcrScore*0.52,0,100);
+    const pokemonEvidence = side==='BACK'
+      ? (pokemonOcrScore>=55 && pokemonVisual.score>=45)
+      : (pokemonOcrScore>=44 && pokemonVisual.score>=48);
 
     const exposurePenalty = Math.abs(mean-128)*0.75 + Math.max(0,glarePct-1.2)*8 + Math.max(0,blackPct-3)*4;
     const exposureScore = clamp(100-exposurePenalty,0,100);
@@ -305,14 +465,19 @@ button,a{font:inherit}
     }
     previousMini=mini;
 
-    const score = Math.round(
-      framingScore*0.20 + ratioScore*0.10 + sharpScore*0.25 +
-      exposureScore*0.15 + glareScore*0.15 + motion*0.15
+    const rawScore = Math.round(
+      cardScore*0.19 + pokemonScore*0.22 + framingScore*0.09 + ratioScore*0.06 + sharpScore*0.16 +
+      exposureScore*0.09 + glareScore*0.08 + motion*0.11
     );
+    // Sin carta física o sin evidencia Pokémon, el score queda deliberadamente capado.
+    let score = edge.found ? rawScore : Math.min(rawScore, 40);
+    if(edge.found && !pokemonEvidence) score=Math.min(score,64);
 
     const gates = {
-      framing: framingScore >= 72,
-      ratio: ratioScore >= 70,
+      card: edge.found && cardScore >= 72,
+      pokemon: pokemonEvidence && pokemonScore >= 62,
+      framing: framingScore >= 70,
+      ratio: ratioScore >= 72,
       sharp: sharpScore >= 65,
       exposure: exposureScore >= 65,
       glare: glareScore >= 72,
@@ -320,57 +485,151 @@ button,a{font:inherit}
     };
     const ready = score >= STRICT_READY_SCORE && Object.values(gates).every(Boolean);
 
-    let hint='Mantén la carta dentro del marco';
-    if (!gates.framing) hint='Alinea mejor los cuatro bordes con el marco';
-    else if (!gates.ratio) hint='Endereza el teléfono: la carta parece deformada';
+    let hint='Coloca una carta dentro del marco';
+    if (!gates.card) hint='No detecto una carta física: necesito ver sus 4 bordes completos';
+    else if (!gates.pokemon) {
+      if(pokemonOcrStatus==='LOAD') hint='Cargando verificador Pokémon… la primera vez puede tardar unos segundos';
+      else if(pokemonOcrStatus==='SCAN') hint='Verificando que corresponda a Pokémon TCG…';
+      else if(pokemonOcrStatus==='ERROR') hint='No pude cargar el verificador Pokémon. Revisa tu conexión.';
+      else hint='Pokémon TCG no confirmado: mantén la carta derecha y deja visibles texto y bordes';
+    }
+    else if (!gates.framing) hint='Alinea mejor los cuatro bordes con el marco';
+    else if (!gates.ratio) hint='Endereza el teléfono: la geometría de la carta no coincide';
     else if (!gates.sharp) hint='Foto poco nítida: mantén el teléfono fijo o aléjate un poco';
     else if (!gates.exposure) hint=mean<88?'Falta luz':'Hay demasiada luz';
     else if (!gates.glare) hint='Mueve la luz o inclínala: hay reflejo fuerte';
     else if (!gates.stable) hint='Mantén el teléfono quieto';
-    else if (ready) hint='Foto válida para pre-grading';
+    else if (ready) hint='Carta detectada · foto válida para pre-grading';
 
-    return {score,ready,gates,framingScore,ratioScore,sharpScore,exposureScore,glareScore,motion,mean,glarePct,ratio:edge.ratio,hint};
+    return {score,ready,gates,cardScore,pokemonScore,pokemonVisualScore:pokemonVisual.score,pokemonOcrScore,pokemonOcrStatus,pokemonOcrSignals,framingScore,ratioScore,sharpScore,exposureScore,glareScore,motion,mean,glarePct,ratio:edge.ratio,hint,edge};
   }
 
-  function detectGuideEdges(gray,w,h) {
-    // El canvas incluye 8% de margen alrededor del marco; buscamos el salto de contraste
-    // más fuerte cerca de cada borde esperado. Funciona mejor con fondo mate/contrastante.
-    const expected = {left:w*.069, right:w*.931, top:h*.069, bottom:h*.931};
-    const bandX = Math.max(5,Math.round(w*.085));
-    const bandY = Math.max(5,Math.round(h*.085));
+  function median(values) {
+    if (!values.length) return 0;
+    const a = [...values].sort((x,y)=>x-y);
+    const m = Math.floor(a.length/2);
+    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+  }
 
-    const vEnergy = new Float32Array(w);
-    for (let x=1;x<w-1;x++) {
-      let s=0,n=0;
-      for (let y=Math.round(h*.12);y<Math.round(h*.88);y+=3) {
-        s += Math.abs(gray[y*w+x+1]-gray[y*w+x-1]); n++;
-      }
-      vEnergy[x]=s/n;
-    }
-    const hEnergy = new Float32Array(h);
-    for (let y=1;y<h-1;y++) {
-      let s=0,n=0;
-      for (let x=Math.round(w*.12);x<Math.round(w*.88);x+=3) {
-        s += Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]); n++;
-      }
-      hEnergy[y]=s/n;
-    }
+  function percentile(values, q) {
+    if (!values.length) return 0;
+    const a = [...values].sort((x,y)=>x-y);
+    const i = clamp(Math.round((a.length-1)*q),0,a.length-1);
+    return a[i];
+  }
 
-    const peak=(arr,center,band)=>{
-      let bi=-1,bv=-1;
-      const a=Math.max(2,Math.round(center-band)), b=Math.min(arr.length-3,Math.round(center+band));
-      for(let i=a;i<=b;i++){if(arr[i]>bv){bv=arr[i];bi=i;}}
-      return {i:bi,v:bv};
+  function lineFit(samples, axisLength) {
+    if (!samples.length) return {median:0,continuity:0,straightness:0,strength:0,slope:0};
+    const mags=samples.map(s=>s.mag);
+    // Umbral adaptativo: evita que texturas débiles del fondo cuenten como borde.
+    const adaptive=Math.max(7.5, percentile(mags,0.35)*1.25);
+    const strong=samples.filter(s=>s.mag>=adaptive);
+    if (!strong.length) return {median:0,continuity:0,straightness:0,strength:0,slope:0};
+    const med=median(strong.map(s=>s.pos));
+    const tolerance=Math.max(3,axisLength*0.018);
+    const inliers=strong.filter(s=>Math.abs(s.pos-med)<=tolerance);
+    const continuity=inliers.length/samples.length;
+    const deviations=inliers.map(s=>Math.abs(s.pos-med));
+    const mad=median(deviations);
+    const straightness=clamp(1-mad/(tolerance*1.35),0,1);
+    const strength=clamp((median(inliers.map(s=>s.mag))-7)/22,0,1);
+
+    // Regresión simple para detectar lados diagonales/ruidosos.
+    let sx=0,sy=0,sxx=0,sxy=0,n=0;
+    for(const s of inliers){sx+=s.t;sy+=s.pos;sxx+=s.t*s.t;sxy+=s.t*s.pos;n++;}
+    const den=n*sxx-sx*sx;
+    const slope=Math.abs(den ? (n*sxy-sx*sy)/den : 0);
+    return {median:med,continuity,straightness,strength,slope};
+  }
+
+  function scanVertical(gray,w,h,center,band) {
+    const samples=[];
+    const y0=Math.round(h*.14), y1=Math.round(h*.86);
+    for(let y=y0;y<=y1;y+=3){
+      let bestPos=-1,bestMag=-1;
+      const a=Math.max(2,Math.round(center-band)), b=Math.min(w-3,Math.round(center+band));
+      for(let x=a;x<=b;x++){
+        const mag=Math.abs(gray[y*w+x+1]-gray[y*w+x-1]);
+        if(mag>bestMag){bestMag=mag;bestPos=x;}
+      }
+      samples.push({t:(y-y0)/Math.max(1,y1-y0),pos:bestPos,mag:bestMag});
+    }
+    return lineFit(samples,w);
+  }
+
+  function scanHorizontal(gray,w,h,center,band) {
+    const samples=[];
+    const x0=Math.round(w*.14), x1=Math.round(w*.86);
+    for(let x=x0;x<=x1;x+=3){
+      let bestPos=-1,bestMag=-1;
+      const a=Math.max(2,Math.round(center-band)), b=Math.min(h-3,Math.round(center+band));
+      for(let y=a;y<=b;y++){
+        const mag=Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]);
+        if(mag>bestMag){bestMag=mag;bestPos=y;}
+      }
+      samples.push({t:(x-x0)/Math.max(1,x1-x0),pos:bestPos,mag:bestMag});
+    }
+    return lineFit(samples,h);
+  }
+
+  function stripContrast(gray,w,h,L,R,T,B) {
+    const d=Math.max(2,Math.round(Math.min(w,h)*.012));
+    const span=Math.max(3,Math.round(Math.min(w,h)*.018));
+    const means=[];
+    const meanRect=(x0,y0,x1,y1)=>{
+      x0=clamp(Math.round(x0),0,w-1); x1=clamp(Math.round(x1),0,w-1);
+      y0=clamp(Math.round(y0),0,h-1); y1=clamp(Math.round(y1),0,h-1);
+      let s=0,n=0;
+      for(let y=y0;y<=y1;y+=2) for(let x=x0;x<=x1;x+=2){s+=gray[y*w+x];n++;}
+      return n?s/n:0;
     };
-    const L=peak(vEnergy,expected.left,bandX), R=peak(vEnergy,expected.right,bandX);
-    const T=peak(hEnergy,expected.top,bandY), B=peak(hEnergy,expected.bottom,bandY);
-    const threshold=6.0;
-    const found=[L,R,T,B].every(p=>p.i>=0 && p.v>=threshold) && R.i>L.i && B.i>T.i;
-    if(!found) return {found:false,ratio:CARD_RATIO,fitError:1};
-    const cw=R.i-L.i, ch=B.i-T.i;
-    const ratio=cw/ch;
-    const err=(Math.abs(L.i-expected.left)/w+Math.abs(R.i-expected.right)/w+Math.abs(T.i-expected.top)/h+Math.abs(B.i-expected.bottom)/h)/4;
-    return {found:true,ratio,fitError:err};
+    const y0=T+Math.round((B-T)*.16), y1=B-Math.round((B-T)*.16);
+    const x0=L+Math.round((R-L)*.16), x1=R-Math.round((R-L)*.16);
+    means.push(Math.abs(meanRect(L+d,y0,L+d+span,y1)-meanRect(L-d-span,y0,L-d,y1)));
+    means.push(Math.abs(meanRect(R-d-span,y0,R-d,y1)-meanRect(R+d,y0,R+d+span,y1)));
+    means.push(Math.abs(meanRect(x0,T+d,x1,T+d+span)-meanRect(x0,T-d-span,x1,T-d)));
+    means.push(Math.abs(meanRect(x0,B-d-span,x1,B-d)-meanRect(x0,B+d,x1,B+d+span)));
+    return clamp(median(means)/16,0,1);
+  }
+
+  function detectCardGeometry(gray,w,h) {
+    // El canvas contiene ANALYSIS_PAD alrededor del marco visible.
+    const inset=ANALYSIS_PAD/(1+2*ANALYSIS_PAD);
+    const expected={left:w*inset,right:w*(1-inset),top:h*inset,bottom:h*(1-inset)};
+    const bandX=Math.max(8,Math.round(w*.07));
+    const bandY=Math.max(8,Math.round(h*.07));
+
+    const L=scanVertical(gray,w,h,expected.left,bandX);
+    const R=scanVertical(gray,w,h,expected.right,bandX);
+    const T=scanHorizontal(gray,w,h,expected.top,bandY);
+    const B=scanHorizontal(gray,w,h,expected.bottom,bandY);
+    const sides=[L,R,T,B];
+
+    // Un borde de carta debe mantenerse a lo largo de buena parte del lado.
+    const continuity=sides.reduce((a,s)=>a+s.continuity,0)/4;
+    const straight=sides.reduce((a,s)=>a+s.straightness,0)/4;
+    const strength=sides.reduce((a,s)=>a+s.strength,0)/4;
+    const worstContinuity=Math.min(...sides.map(s=>s.continuity));
+    const maxSlope=Math.max(...sides.map(s=>s.slope));
+
+    const geometryPossible=R.median>L.median && B.median>T.median;
+    const cw=geometryPossible?R.median-L.median:0;
+    const ch=geometryPossible?B.median-T.median:1;
+    const ratio=geometryPossible?cw/ch:CARD_RATIO;
+    const fitError=geometryPossible
+      ? (Math.abs(L.median-expected.left)/w+Math.abs(R.median-expected.right)/w+
+         Math.abs(T.median-expected.top)/h+Math.abs(B.median-expected.bottom)/h)/4
+      : 1;
+    const ratioCloseness=geometryPossible?clamp(1-Math.abs(ratio-CARD_RATIO)/(CARD_RATIO*.15),0,1):0;
+    const contrast=geometryPossible?stripContrast(gray,w,h,L.median,R.median,T.median,B.median):0;
+    const slopeScore=clamp(1-maxSlope/8,0,1);
+
+    const cardScore=clamp(100*(continuity*.48+straight*.18+strength*.12+ratioCloseness*.10+contrast*.07+slopeScore*.05),0,100);
+    const found=geometryPossible &&
+      worstContinuity>=0.48 && continuity>=0.63 && straight>=0.52 &&
+      ratioCloseness>=0.58 && cardScore>=64;
+
+    return {found,cardScore,ratio,fitError,continuity,worstContinuity,straight,strength,contrast,maxSlope,L,R,T,B};
   }
 
   function makeMini(gray,w,h,mw,mh){
@@ -389,7 +648,9 @@ button,a{font:inherit}
   function renderMetrics(m) {
     qualityScore.textContent = m.score;
     setMetric(metricEls.framing,label(m.framingScore),state(m.framingScore));
-    setMetric(metricEls.ratio,label(m.ratioScore),state(m.ratioScore));
+    setMetric(metricEls.ratio,m.gates.card?'DETECTADA':Math.round(m.cardScore)+'%',m.gates.card?'ok':m.cardScore>=55?'warn':'bad');
+    const pkText=m.gates.pokemon?'CONFIRMADO':(m.pokemonOcrStatus==='SCAN'||m.pokemonOcrStatus==='LOAD'?'VERIFICANDO':Math.round(m.pokemonScore)+'%');
+    setMetric(metricEls.pokemon,pkText,m.gates.pokemon?'ok':m.pokemonScore>=48?'warn':'bad');
     setMetric(metricEls.sharp,Math.round(m.sharpScore),state(m.sharpScore,65,48));
     setMetric(metricEls.exposure,Math.round(m.exposureScore),state(m.exposureScore,65,48));
     setMetric(metricEls.glare,m.glarePct.toFixed(1)+'%',m.glareScore>=72?'ok':m.glareScore>=50?'warn':'bad');
@@ -429,7 +690,7 @@ button,a{font:inherit}
     downloadBtn.download=`LXR-${side}-${new Date().toISOString().replace(/[:.]/g,'-')}.jpg`;
     document.getElementById('captureMeta').textContent=`${side} · ${w}×${h} · JPEG 96%`;
     const m=latestMetrics;
-    captureStats.innerHTML=`<div>Quality<b>${m.score}/100</b></div><div>Sharpness<b>${Math.round(m.sharpScore)}</b></div><div>Glare<b>${m.glarePct.toFixed(1)}%</b></div>`;
+    captureStats.innerHTML=`<div>Quality<b>${m.score}/100</b></div><div>Pokémon ID<b>${Math.round(m.pokemonScore)}%</b></div><div>Sharpness<b>${Math.round(m.sharpScore)}</b></div><div>Glare<b>${m.glarePct.toFixed(1)}%</b></div>`;
     resultSheet.classList.remove('hidden'); resultSheet.setAttribute('aria-hidden','false');
   }
 
@@ -444,7 +705,7 @@ button,a{font:inherit}
 
   startBtn.addEventListener('click',startCamera);
   captureBtn.addEventListener('click',()=>capturePhoto(false));
-  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · VALIDATOR v0.1`;});
+  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · POKÉMON-ONLY v0.3`;pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';readyStreak=0;});
   shareBtn.addEventListener('click',shareCapture);
   retakeBtn.addEventListener('click',()=>resultSheet.classList.add('hidden'));
   closeResult.addEventListener('click',()=>resultSheet.classList.add('hidden'));
