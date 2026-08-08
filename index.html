@@ -1,911 +1,247 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-  <meta name="theme-color" content="#0b0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="LXR Card Cam" />
-  <style>
-:root{color-scheme:dark;--bg:#0b0d12;--panel:rgba(10,12,18,.78);--text:#f5f7fb;--muted:#aeb5c2;--line:rgba(255,255,255,.16);--good:#54e38e;--warn:#ffd166;--bad:#ff6472;--accent:#8b7cff}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overscroll-behavior:none}
-body{min-height:100dvh}
-button,a{font:inherit}
-.camera-shell{position:relative;width:100%;height:100dvh;overflow:hidden;background:#050608}
-#video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#050608}
-#analysisCanvas,#captureCanvas,#ocrCanvas{display:none}
-.topbar{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 14px) 18px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,0))}
-.brand{font-size:14px;font-weight:750;letter-spacing:.12em}.sub{margin-top:4px;color:var(--muted);font-size:12px;letter-spacing:.05em}
-.ghost-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);font-size:20px}
-.guide{--guide-color:rgba(255,255,255,.58);position:absolute;z-index:3;left:50%;top:41%;width:min(78vw,370px);aspect-ratio:63/88;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,var(--guide-color) 46%,transparent);border-radius:13px;box-shadow:none;transition:.18s ease;opacity:.78}
-.guide.state-good{--guide-color:var(--good)}.guide.state-warn{--guide-color:var(--warn)}.guide.state-bad{--guide-color:var(--bad)}
-.corner{position:absolute;width:44px;height:44px;border-color:var(--guide-color);border-style:solid}.tl{left:-3px;top:-3px;border-width:4px 0 0 4px;border-radius:13px 0 0 0}.tr{right:-3px;top:-3px;border-width:4px 4px 0 0;border-radius:0 13px 0 0}.bl{left:-3px;bottom:-3px;border-width:0 0 4px 4px;border-radius:0 0 0 13px}.br{right:-3px;bottom:-3px;border-width:0 4px 4px 0;border-radius:0 0 13px 0}
-.guide-label{position:absolute;left:50%;top:-34px;transform:translateX(-50%);font-size:11px;white-space:nowrap;color:var(--guide-color);font-weight:700;letter-spacing:.1em;text-shadow:0 1px 6px #000}
-.detected-box{position:absolute;z-index:4;display:none;border:2px dashed var(--good);border-radius:10px;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.35)}.detected-box span{position:absolute;right:4px;top:-22px;padding:3px 6px;border-radius:999px;background:rgba(0,0,0,.68);color:var(--good);font-size:9px;font-weight:800;letter-spacing:.08em}
-.camera-message{position:absolute;z-index:4;left:50%;top:72%;transform:translate(-50%,0);max-width:92vw;padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.62);font-size:12px;text-align:center;backdrop-filter:blur(12px);pointer-events:none}
-.bottom-panel{position:absolute;z-index:6;bottom:0;left:0;right:0;padding:8px 14px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(to top,rgba(3,4,8,.98),rgba(3,4,8,.88),rgba(3,4,8,.18),transparent);padding-top:24px}
-.score-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.15em}.score{font-size:30px;font-weight:750;font-variant-numeric:tabular-nums}.score-den{font-size:15px;color:var(--muted)}
-.badge{padding:7px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.08em}.tiny-btn{border:1px solid var(--line);background:rgba(0,0,0,.32);color:var(--text);border-radius:999px;padding:6px 9px;font-size:11px}.score-actions{display:flex;align-items:center;gap:7px}.badge-wait{background:rgba(255,255,255,.1)}.badge-good{color:#082413;background:var(--good)}.badge-warn{color:#2b2102;background:var(--warn)}.badge-bad{color:#2b060a;background:var(--bad)}
-.metrics-grid{display:none;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 9px}.metrics-grid.open{display:grid}.metric{padding:6px 8px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.30);backdrop-filter:blur(10px)}.metric span{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin-top:3px;font-size:12px;font-weight:700}.ok{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
-.controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:9px}.switch-row{grid-column:1/-1;display:flex;justify-content:flex-end;gap:7px;align-items:center;font-size:11px;color:var(--muted);height:20px}.switch-row input{accent-color:var(--accent)}
-.primary-btn,.secondary-btn{min-height:44px;border-radius:14px;border:1px solid var(--line);padding:10px 12px;font-weight:700}.primary-btn{background:var(--text);color:#101218;border-color:transparent}.secondary-btn{background:rgba(0,0,0,.35);color:var(--text)}
-.shutter{width:58px;height:58px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,.14);padding:5px}.shutter span{display:block;width:100%;height:100%;border-radius:50%;background:white;transition:.15s}.shutter:disabled{opacity:.35}.shutter:not(:disabled):active span{transform:scale(.88)}
-.sheet{position:fixed;z-index:20;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.65);backdrop-filter:blur(8px)}.hidden{display:none}.sheet-card{width:100%;max-height:92dvh;overflow:auto;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);background:#11141b;border-radius:24px 24px 0 0}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-card img{display:block;width:100%;max-height:56dvh;object-fit:contain;background:#08090c;border-radius:16px;border:1px solid var(--line)}
-.capture-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.capture-stats div{padding:9px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12px}.capture-stats b{display:block;font-size:16px;margin-top:2px}.view-toggle{display:flex;gap:7px;margin:10px 0}.view-toggle .active{border-color:var(--good);color:var(--good)}.sheet-actions{display:grid;gap:9px}.link-btn{text-decoration:none;text-align:center}.help-card ol{padding-left:22px;color:#e6e9ef}.help-card li{margin:10px 0}.fineprint{font-size:12px;color:var(--muted)}
-@media(min-width:700px){.camera-shell{max-width:520px;margin:0 auto}.sheet-card{max-width:520px;margin:0 auto}}
-
-  </style>
-  <title>LXR Card Camera · Pokémon TCG Only</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#06070a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>LXR Card Camera v0.7</title>
+<style>
+:root{--bg:#06070a;--panel:rgba(10,12,17,.76);--text:#f5f7fb;--muted:#a9b0bc;--line:rgba(255,255,255,.15);--good:#65e68b;--warn:#ffd05a;--bad:#ff6577;--guide:#f3c75d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overscroll-behavior:none}body{min-height:100dvh}.app{min-height:100dvh;display:flex;flex-direction:column}.top{padding:calc(env(safe-area-inset-top) + 12px) 18px 8px;display:flex;align-items:flex-start;justify-content:space-between;background:#07090d}.brand{letter-spacing:.16em;font-weight:750;font-size:17px}.sub{margin-top:4px;color:#c2c7d0;font-size:12px;letter-spacing:.07em}.help{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:transparent;color:white;font-size:20px}.camera-shell{position:relative;flex:1;min-height:500px;background:#000;overflow:hidden}.video-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}video{width:100%;height:100%;object-fit:contain;background:#000}.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.08),transparent 12%,transparent 82%,rgba(0,0,0,.2))}.guide-wrap{position:absolute;inset:0;pointer-events:none}.guide-outer,.guide-inner{position:absolute;border-radius:18px}.guide-outer{border:2px dashed rgba(243,199,93,.88);box-shadow:0 0 0 9999px rgba(0,0,0,.08)}.guide-inner{border:1px dashed rgba(255,255,255,.48)}.guide-corner{position:absolute;width:40px;height:40px;border-color:var(--guide);border-style:solid}.guide-corner.tl{left:-3px;top:-3px;border-width:5px 0 0 5px;border-radius:18px 0 0 0}.guide-corner.tr{right:-3px;top:-3px;border-width:5px 5px 0 0;border-radius:0 18px 0 0}.guide-corner.bl{left:-3px;bottom:-3px;border-width:0 0 5px 5px;border-radius:0 0 0 18px}.guide-corner.br{right:-3px;bottom:-3px;border-width:0 5px 5px 0;border-radius:0 0 18px 0}.guide-label{position:absolute;left:50%;top:-34px;transform:translateX(-50%);white-space:nowrap;color:var(--guide);font-size:12px;font-weight:700;letter-spacing:.12em;text-shadow:0 2px 8px #000}.hint{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);max-width:88%;padding:9px 14px;border-radius:18px;background:rgba(4,5,8,.72);backdrop-filter:blur(8px);font-size:13px;text-align:center;color:#eef0f4;pointer-events:none}.quality{position:absolute;left:18px;bottom:26px}.quality small{display:block;color:#d3d6dc;font-size:11px;letter-spacing:.14em}.quality b{font-size:44px;line-height:1;font-weight:500}.quality span{font-size:17px;color:#aeb4bf}.status{position:absolute;right:18px;bottom:31px;padding:10px 14px;border-radius:22px;font-size:12px;font-weight:800;letter-spacing:.08em;background:var(--warn);color:#17120a}.status.good{background:var(--good);color:#06130a}.status.bad{background:var(--bad);color:white}.control-panel{background:#080a0f;border-top:1px solid rgba(255,255,255,.07);padding:10px 16px calc(env(safe-area-inset-bottom) + 14px)}.row{display:flex;align-items:center;gap:9px}.row+.row{margin-top:9px}.pill{flex:1;border:1px solid var(--line);background:#10131a;color:#eef0f4;border-radius:13px;padding:10px 12px;font-size:13px}.pill.active{border-color:var(--guide);color:var(--guide)}.capture{width:70px;height:70px;border:5px solid rgba(255,255,255,.46);border-radius:50%;padding:5px;background:transparent;flex:0 0 70px}.capture:after{content:"";display:block;width:100%;height:100%;border-radius:50%;background:#d6d7da}.capture:disabled{opacity:.35}.capture:not(:disabled):active:after{transform:scale(.92)}.secondary{border:1px solid var(--line);background:#10131a;color:#fff;border-radius:14px;padding:13px 16px;font-size:15px;font-weight:650}.secondary.flex{flex:1}.tiny{border:1px solid var(--line);background:#10131a;color:#ddd;border-radius:11px;padding:8px 10px;font-size:12px}.tiny.active{border-color:var(--guide);color:var(--guide)}.auto{display:flex;align-items:center;gap:7px;color:#c9cdd5;font-size:13px;white-space:nowrap}.auto input{width:20px;height:20px}.metrics{display:none;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}.metrics.show{display:grid}.metric{border:1px solid var(--line);background:#0e1117;border-radius:11px;padding:8px}.metric span{display:block;color:#9ea5b1;font-size:10px}.metric b{display:block;margin-top:3px;font-size:14px}.ok{color:var(--good)!important}.warn{color:var(--warn)!important}.bad{color:var(--bad)!important}.zoomrow{display:none;gap:6px}.zoomrow.show{display:flex}.sheet{position:fixed;z-index:30;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(10px);display:flex;align-items:flex-end}.sheet.hidden{display:none}.sheet-card{width:100%;max-height:92dvh;overflow:auto;background:#11141b;border-radius:24px 24px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px)}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.sheet h2{margin:0;font-size:18px}.sheet img{display:block;width:100%;max-height:56dvh;object-fit:contain;background:#06070a;border-radius:14px;border:1px solid var(--line)}.tabs{display:flex;gap:7px;margin:10px 0}.tabs button{flex:1}.actions{display:grid;gap:8px;margin-top:10px}.actions a{text-decoration:none;text-align:center}.note{font-size:12px;color:var(--muted);line-height:1.45}.start{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#171b25,#07080b 68%);padding:28px}.start-card{max-width:350px;text-align:center}.start-card h1{font-size:23px}.start-card p{color:#c0c5ce;font-size:14px;line-height:1.45}.primary{border:0;border-radius:15px;background:white;color:#08090c;font-size:16px;font-weight:750;padding:14px 20px;width:100%}.hidden{display:none!important}canvas{display:none}@media(min-width:700px){.app{max-width:520px;margin:auto}.sheet-card{max-width:520px;margin:auto}}
+</style>
 </head>
 <body>
-  <main id="app">
-    <section class="camera-shell">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="analysisCanvas" aria-hidden="true"></canvas>
-      <canvas id="captureCanvas" aria-hidden="true"></canvas>
-      <canvas id="cropCanvas" aria-hidden="true"></canvas>
-      <canvas id="ocrCanvas" aria-hidden="true"></canvas>
-
-      <div class="topbar">
-        <div>
-          <div class="brand">LXR CARD CAMERA</div>
-          <div class="sub" id="stepLabel">FRONT · FREE DETECT v0.6</div>
-        </div>
-        <button id="helpBtn" class="ghost-btn" type="button" aria-label="Ayuda">?</button>
+<div class="app">
+  <header class="top">
+    <div><div class="brand">LXR CARD CAMERA</div><div class="sub">POKÉMON TCG · GUIDED CAPTURE v0.7</div></div>
+    <button id="helpBtn" class="help" type="button">?</button>
+  </header>
+  <main class="camera-shell" id="cameraShell">
+    <div class="video-wrap"><video id="video" autoplay playsinline muted></video></div>
+    <div class="shade"></div>
+    <div class="guide-wrap">
+      <div id="guideOuter" class="guide-outer">
+        <div class="guide-corner tl"></div><div class="guide-corner tr"></div><div class="guide-corner bl"></div><div class="guide-corner br"></div>
+        <div id="guideLabel" class="guide-label">DEJA LOS 4 BORDES DENTRO DE LA BANDA</div>
       </div>
-
-      <div id="guide" class="guide state-idle" aria-hidden="true">
-        <span class="corner tl"></span><span class="corner tr"></span>
-        <span class="corner bl"></span><span class="corner br"></span>
-        <div class="guide-label">GUÍA SUAVE · SOLO DEJA LOS 4 BORDES VISIBLES</div>
+      <div id="guideInner" class="guide-inner"></div>
+    </div>
+    <div id="hint" class="hint">Mantén el teléfono a unos 25–35 cm. No necesitas clavar el borde exacto.</div>
+    <div class="quality"><small>QUALITY</small><b id="quality">—</b><span>/100</span></div>
+    <div id="status" class="status">INICIAR</div>
+    <div id="startScreen" class="start">
+      <div class="start-card">
+        <h1>Captura para pre-grading</h1>
+        <p>Esta versión no intenta adivinar el borde físico en vivo. La banda amarilla es una zona de tolerancia: deja la carta completa dentro y la app valida enfoque, luz, reflejos y estabilidad.</p>
+        <button id="startBtn" class="primary" type="button">Iniciar cámara</button>
       </div>
-      <div id="detectedBox" class="detected-box" aria-hidden="true"><span>AUTO</span></div>
-
-      <div id="cameraMessage" class="camera-message">Pulsa “Iniciar cámara”</div>
-
-      <div class="bottom-panel">
-        <div class="score-row">
-          <div>
-            <span class="eyebrow">QUALITY</span>
-            <div><span id="qualityScore" class="score">--</span><span class="score-den">/100</span></div>
-          </div>
-          <div class="score-actions"><button id="detailsBtn" class="tiny-btn" type="button">Detalles</button><div id="readyBadge" class="badge badge-wait">ESPERANDO</div></div>
-        </div>
-
-        <div id="metricsGrid" class="metrics-grid" aria-live="polite">
-          <div class="metric"><span>Cobertura</span><strong id="mFraming">—</strong></div>
-          <div class="metric"><span>Carta física</span><strong id="mRatio">—</strong></div>
-          <div class="metric"><span>Pokémon ID</span><strong id="mPokemon">—</strong></div>
-          <div class="metric"><span>Enfoque</span><strong id="mSharp">—</strong></div>
-          <div class="metric"><span>Exposición</span><strong id="mExposure">—</strong></div>
-          <div class="metric"><span>Glare</span><strong id="mGlare">—</strong></div>
-          <div class="metric"><span>Estabilidad</span><strong id="mStable">—</strong></div>
-        </div>
-
-        <div class="controls">
-          <label class="switch-row">
-            <span>Auto Capture</span>
-            <input id="autoCapture" type="checkbox" checked />
-          </label>
-          <button id="startBtn" class="primary-btn" type="button">Iniciar cámara</button>
-          <button id="captureBtn" class="shutter" type="button" disabled aria-label="Capturar foto"><span></span></button>
-          <button id="flipBtn" class="secondary-btn" type="button">Front / Back</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="resultSheet" class="sheet hidden" aria-hidden="true">
-      <div class="sheet-card">
-        <div class="sheet-head">
-          <div>
-            <div class="brand">CAPTURA COMPLETADA</div>
-            <div class="sub" id="captureMeta">Foto original</div>
-          </div>
-          <button id="closeResult" class="ghost-btn" type="button">×</button>
-        </div>
-        <img id="capturedImage" alt="Fotografía capturada de la carta" />
-        <div class="view-toggle"><button id="viewCropBtn" class="tiny-btn active" type="button">AUTO-CROP</button><button id="viewOriginalBtn" class="tiny-btn" type="button">ORIGINAL</button></div>
-        <div class="capture-stats" id="captureStats"></div>
-        <div class="sheet-actions">
-          <button id="shareBtn" class="primary-btn" type="button">Compartir / Guardar</button>
-          <a id="downloadBtn" class="secondary-btn link-btn" download="LXR-card-crop.jpg">Descargar AUTO-CROP</a>
-          <a id="originalDownloadBtn" class="secondary-btn link-btn" download="LXR-card-original.jpg">Descargar ORIGINAL</a>
-          <button id="retakeBtn" class="secondary-btn" type="button">Tomar otra</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="helpSheet" class="sheet hidden" aria-hidden="true">
-      <div class="sheet-card help-card">
-        <div class="sheet-head"><div class="brand">CÓMO USARLA</div><button id="closeHelp" class="ghost-btn" type="button">×</button></div>
-        <ol>
-          <li>Coloca la carta sin sleeve sobre un fondo mate y contrastante.</li>
-          <li>Usa luz difusa; evita reflejos directos sobre holo y bordes.</li>
-          <li>Mantén el iPhone aproximadamente perpendicular y deja los 4 bordes completos dentro de la zona. No necesitas hacer coincidir la carta con el marco: es solo una referencia visual y la detección busca la carta por toda la imagen.</li>
-          <li>“Detalles” abre/cierra las métricas; déjalo cerrado mientras encuadras para no tapar la carta.</li>
-          <li>Cuando QUALITY llegue al umbral y se mantenga estable, Auto Capture puede disparar solo. También puedes disparar manualmente antes si Pokémon ID y la calidad básica ya pasan. La app conserva ORIGINAL y crea AUTO-CROP.</li>
-        </ol>
-        <p class="fineprint">Esta v0.6 usa detección libre: la carta puede estar desplazada respecto al marco siempre que sus 4 bordes sean visibles. Además exige evidencia de que corresponde a Pokémon TCG. Compatible con cartas en inglés, japonés y chino usando señales visuales y marcadores universales como HP, numeración y líneas legales. No verifica autenticidad frente a falsificaciones sofisticadas y no asigna un grado PSA.</p>
-      </div>
-    </section>
+    </div>
   </main>
+  <section class="control-panel">
+    <div class="row">
+      <button id="restartBtn" class="secondary flex" type="button">Reiniciar</button>
+      <button id="captureBtn" class="capture" type="button" disabled aria-label="Tomar foto"></button>
+      <button id="sideBtn" class="secondary flex" type="button">FRONT</button>
+    </div>
+    <div class="row">
+      <button id="protectionBtn" class="pill" type="button">Raw card</button>
+      <button id="detailsBtn" class="pill" type="button">Detalles</button>
+      <label class="auto">Auto <input id="autoCapture" type="checkbox"></label>
+    </div>
+    <div id="zoomRow" class="zoomrow"></div>
+    <div id="metrics" class="metrics">
+      <div class="metric"><span>Enfoque</span><b id="mSharp">—</b></div>
+      <div class="metric"><span>Exposición</span><b id="mExposure">—</b></div>
+      <div class="metric"><span>Glare</span><b id="mGlare">—</b></div>
+      <div class="metric"><span>Estabilidad</span><b id="mStable">—</b></div>
+    </div>
+  </section>
+</div>
 
-  <script>
+<div id="resultSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2>Captura lista</h2><button id="closeResult" class="tiny" type="button">Cerrar</button></div>
+    <img id="resultImage" alt="Captura de carta Pokémon TCG">
+    <div class="tabs"><button id="cropTab" class="tiny active" type="button">GUIDE-CROP</button><button id="originalTab" class="tiny" type="button">ORIGINAL</button></div>
+    <p id="captureInfo" class="note"></p>
+    <div class="actions">
+      <button id="shareBtn" class="secondary" type="button">Compartir / Guardar</button>
+      <a id="downloadCrop" class="secondary" download="LXR-guide-crop.jpg">Descargar GUIDE-CROP</a>
+      <a id="downloadOriginal" class="secondary" download="LXR-original.jpg">Descargar ORIGINAL</a>
+      <button id="retakeBtn" class="primary" type="button">Tomar otra</button>
+    </div>
+  </div>
+</div>
+
+<div id="helpSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2>Cómo usar v0.7</h2><button id="closeHelp" class="tiny" type="button">Cerrar</button></div>
+    <p class="note">1) Pon la carta sobre fondo liso. 2) Mantén el iPhone a ~25–35 cm para evitar macro/distorsión. 3) El borde físico de la carta debe quedar entre el rectángulo interior y el exterior: no tiene que coincidir pixel por pixel. 4) Evita reflejos sobre esquinas y bordes. 5) ORIGINAL se conserva sin modificar; GUIDE-CROP solo sirve para facilitar el análisis.</p>
+    <p class="note">Para pre-grading serio recomendamos <b>Raw card</b>. Sleeve puede funcionar. Top loader añade reflejos y puede ocultar defectos de superficie.</p>
+  </div>
+</div>
+
+<canvas id="analysisCanvas"></canvas><canvas id="captureCanvas"></canvas><canvas id="cropCanvas"></canvas>
+<script>
 (() => {
-  'use strict';
+'use strict';
+const CARD_RATIO=63/88;
+const READY_SCORE=78;
+const MANUAL_SCORE=52;
+const video=document.getElementById('video');
+const shell=document.getElementById('cameraShell');
+const outer=document.getElementById('guideOuter');
+const inner=document.getElementById('guideInner');
+const qualityEl=document.getElementById('quality');
+const statusEl=document.getElementById('status');
+const hintEl=document.getElementById('hint');
+const captureBtn=document.getElementById('captureBtn');
+const autoEl=document.getElementById('autoCapture');
+const analysisCanvas=document.getElementById('analysisCanvas');
+const captureCanvas=document.getElementById('captureCanvas');
+const cropCanvas=document.getElementById('cropCanvas');
+const aCtx=analysisCanvas.getContext('2d',{willReadFrequently:true});
+const capCtx=captureCanvas.getContext('2d');
+const cropCtx=cropCanvas.getContext('2d');
+let stream=null,track=null,raf=0,lastMini=null,stableFrames=0,lastShot=0;
+let side='FRONT',protection='RAW';
+let latest={score:0,sharp:0,exposure:0,glare:100,stable:0,ready:false,manual:false};
+let originalUrl='',cropUrl='',currentView='crop';
+let guideNorm={x:.15,y:.1,w:.7,h:.8};
 
-  const CARD_RATIO = 63 / 88;
-  const ANALYZE_EVERY_MS = 220;
-  const ANALYSIS_EDGE_MARGIN = 0.025;
-  const AUTO_CROP_PAD = 0.018;
-  const READY_STREAK_REQUIRED = 4;
-  const STRICT_READY_SCORE = 80;
-  const OCR_INTERVAL_MS = 2400;
-  const OCR_MIN_SHARPNESS = 52;
-  const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js';
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function cssState(v,good=70,warn=48){return v>=good?'ok':v>=warn?'warn':'bad'}
+function setMetric(id,text,state){const e=document.getElementById(id);e.textContent=text;e.className=state||''}
 
-  const video = document.getElementById('video');
-  const analysisCanvas = document.getElementById('analysisCanvas');
-  const captureCanvas = document.getElementById('captureCanvas');
-  const cropCanvas = document.getElementById('cropCanvas');
-  const ocrCanvas = document.getElementById('ocrCanvas');
-  const guide = document.getElementById('guide');
-  const detectedBox = document.getElementById('detectedBox');
-  const startBtn = document.getElementById('startBtn');
-  const captureBtn = document.getElementById('captureBtn');
-  const flipBtn = document.getElementById('flipBtn');
-  const autoCapture = document.getElementById('autoCapture');
-  const qualityScore = document.getElementById('qualityScore');
-  const readyBadge = document.getElementById('readyBadge');
-  const detailsBtn = document.getElementById('detailsBtn');
-  const metricsGrid = document.getElementById('metricsGrid');
-  const cameraMessage = document.getElementById('cameraMessage');
-  const stepLabel = document.getElementById('stepLabel');
-  const resultSheet = document.getElementById('resultSheet');
-  const capturedImage = document.getElementById('capturedImage');
-  const captureStats = document.getElementById('captureStats');
-  const shareBtn = document.getElementById('shareBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const originalDownloadBtn = document.getElementById('originalDownloadBtn');
-  const viewCropBtn = document.getElementById('viewCropBtn');
-  const viewOriginalBtn = document.getElementById('viewOriginalBtn');
-  const retakeBtn = document.getElementById('retakeBtn');
-  const closeResult = document.getElementById('closeResult');
-  const helpSheet = document.getElementById('helpSheet');
+function layoutGuide(){
+  const W=shell.clientWidth,H=shell.clientHeight;
+  if(!W||!H)return;
+  const topReserve=48,bottomReserve=112;
+  const availH=Math.max(260,H-topReserve-bottomReserve);
+  let h=Math.min(availH*.84,H*.68), w=h*CARD_RATIO;
+  if(w>W*.76){w=W*.76;h=w/CARD_RATIO}
+  if(protection==='TOPLOADER'){w*=1.075;h*=1.025}
+  if(protection==='SLEEVE'){w*=1.025;h*=1.012}
+  const x=(W-w)/2,y=topReserve+(availH-h)/2;
+  Object.assign(outer.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+  const inset=protection==='TOPLOADER'?.08:.065;
+  Object.assign(inner.style,{left:(x+w*inset)+'px',top:(y+h*inset)+'px',width:(w*(1-2*inset))+'px',height:(h*(1-2*inset))+'px'});
+  guideNorm={x:x/W,y:y/H,w:w/W,h:h/H};
+}
+window.addEventListener('resize',layoutGuide);
 
-  const metricEls = {
-    framing: document.getElementById('mFraming'), ratio: document.getElementById('mRatio'), pokemon: document.getElementById('mPokemon'),
-    sharp: document.getElementById('mSharp'), exposure: document.getElementById('mExposure'),
-    glare: document.getElementById('mGlare'), stable: document.getElementById('mStable')
-  };
-
-  let stream = null;
-  let timer = null;
-  let side = 'FRONT';
-  let previousMini = null;
-  let readyStreak = 0;
-  let lastCaptureAt = 0;
-  let latestMetrics = null;
-  let capturedBlob = null;
-  let capturedUrl = null;
-  let cropBlob = null;
-  let cropUrl = null;
-  let latestAnalysisMap = null;
-  let currentResultView = 'crop';
-  let pokemonOcrScore = 0;
-  let pokemonOcrText = '';
-  let pokemonOcrStatus = 'WAIT';
-  let pokemonOcrSignals = [];
-  let ocrBusy = false;
-  let lastOcrAt = 0;
-  let ocrWorkerPromise = null;
-  let tesseractScriptPromise = null;
-
-  function setMetric(el, text, state='') {
-    el.textContent = text;
-    el.className = state;
-  }
-
-  function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-
-  function getAnalysisRectOnVideo() {
-    if (!video.videoWidth || !video.videoHeight) return null;
-    // Analizamos casi todo el frame real de cámara, independientemente del marco DOM.
-    // El pequeño margen evita que el borde físico de la imagen compita como “carta”.
-    const mx = video.videoWidth * ANALYSIS_EDGE_MARGIN;
-    const my = video.videoHeight * ANALYSIS_EDGE_MARGIN;
-    return {x:mx,y:my,w:video.videoWidth-2*mx,h:video.videoHeight-2*my};
-  }
-
-  async function startCamera() {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      cameraMessage.textContent = 'Este navegador no permite acceso moderno a cámara.';
-      return;
-    }
-    try {
-      stopCamera();
-      cameraMessage.textContent = 'Solicitando cámara trasera…';
-      // Perfil pensado para iPhone Pro: pedimos la cámara trasera a alta resolución,
-      // 30 fps y relación 4:3 cuando Safari la expone. Safari puede ajustar estos ideales.
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 2560 },
-          height: { ideal: 1920 },
-          frameRate: { ideal: 30, max: 30 },
-          aspectRatio: { ideal: 4/3 }
-        }
-      });
-      video.srcObject = stream;
-      await video.play();
-
-      // Si Safari expone zoom, fijamos 1x para evitar una vista demasiado cerrada.
-      // No todos los builds de iOS permiten modificarlo desde web.
-      const track = stream.getVideoTracks()[0];
-      try {
-        const caps = track.getCapabilities?.() || {};
-        if (caps.zoom && caps.zoom.min <= 1 && caps.zoom.max >= 1) {
-          await track.applyConstraints({ advanced: [{ zoom: 1 }] });
-        }
-      } catch (_) {}
-
-      const settings = track.getSettings?.() || {};
-      startBtn.textContent = 'Reiniciar';
-      const res = settings.width && settings.height ? ` · ${settings.width}×${settings.height}` : '';
-      cameraMessage.textContent = `MODO LIBRE${res} · pon la carta donde quieras y deja sus 4 bordes visibles`;
-      previousMini = null;
-      readyStreak = 0;
-      pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';lastOcrAt=0;
-      timer = setInterval(analyzeFrame, ANALYZE_EVERY_MS);
-    } catch (err) {
-      console.error(err);
-      cameraMessage.textContent = err.name === 'NotAllowedError'
-        ? 'Permiso de cámara rechazado. Actívalo en Ajustes de Safari.'
-        : 'No pude abrir la cámara. Usa HTTPS y Safari.';
-    }
-  }
-
-  function stopCamera() {
-    if (timer) clearInterval(timer);
-    timer = null;
-    stream?.getTracks().forEach(t => t.stop());
-    stream = null;
-    detectedBox.style.display='none';
-  }
-
-  function analyzeFrame() {
-    if (!stream || video.readyState < 2 || !video.videoWidth) return;
-    const r = getAnalysisRectOnVideo();
-    if (!r) return;
-
-    // Mantener la relación real del frame: el detector ya no hereda la forma del marco.
-    const W = 280;
-    const H = clamp(Math.round(W * (r.h / r.w)), 190, 500);
-    analysisCanvas.width = W;
-    analysisCanvas.height = H;
-    const ctx = analysisCanvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(video, r.x, r.y, r.w, r.h, 0, 0, W, H);
-    latestAnalysisMap = {sx:r.x,sy:r.y,sw:r.w,sh:r.h,aw:W,ah:H};
-    const img = ctx.getImageData(0,0,W,H);
-    const metrics = computeMetrics(img.data, W, H);
-    latestMetrics = metrics;
-    renderMetrics(metrics);
-    updateDetectedBox(metrics.edge, latestAnalysisMap);
-    maybeRunPokemonOCR(metrics);
-  }
-
-  function regionVisualStats(data,w,h,x0,y0,x1,y1) {
-    x0=clamp(Math.round(x0),0,w-2); y0=clamp(Math.round(y0),0,h-2);
-    x1=clamp(Math.round(x1),x0+1,w-1); y1=clamp(Math.round(y1),y0+1,h-1);
-    let n=0, satSum=0, colorSum=0, edges=0, blue=0, yellow=0;
-    for(let y=y0;y<y1;y+=2){
-      for(let x=x0;x<x1;x+=2){
-        const i=(y*w+x)*4;
-        const r=data[i],g=data[i+1],b=data[i+2];
-        const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
-        const sat=mx?((mx-mn)/mx):0;
-        satSum+=sat; colorSum+=(mx-mn);
-        if(b>95 && b>r*1.18 && b>g*1.08 && sat>.28) blue++;
-        if(r>145 && g>112 && b<125 && r>b*1.25 && sat>.30) yellow++;
-        const j=(y*w+Math.min(w-1,x+2))*4;
-        const k=(Math.min(h-1,y+2)*w+x)*4;
-        const y0v=.2126*r+.7152*g+.0722*b;
-        const yx=.2126*data[j]+.7152*data[j+1]+.0722*data[j+2];
-        const yy=.2126*data[k]+.7152*data[k+1]+.0722*data[k+2];
-        if(Math.abs(y0v-yx)+Math.abs(y0v-yy)>38) edges++;
-        n++;
-      }
-    }
-    return n?{sat:satSum/n,color:colorSum/n,edgeDensity:edges/n,bluePct:blue/n,yellowPct:yellow/n}:{sat:0,color:0,edgeDensity:0,bluePct:0,yellowPct:0};
-  }
-
-  function analysisBounds(edge,w,h) {
-    if(edge?.geometryPossible){
-      const L=edge.L.median,R=edge.R.median,T=edge.T.median,B=edge.B.median;
-      if(R-L>w*.18 && B-T>h*.28) return {L,R,T,B};
-    }
-    // Fallback solo para OCR mientras todavía no encontramos el contorno: una zona central
-    // grande con proporción Pokémon. No afecta la validación geométrica.
-    let ch=h*.70, cw=ch*CARD_RATIO;
-    if(cw>w*.76){cw=w*.76;ch=cw/CARD_RATIO;}
-    const L=(w-cw)/2,R=L+cw,T=(h-ch)/2,B=T+ch;
-    return {L,R,T,B};
-  }
-
-  function computePokemonVisual(data,w,h,edge) {
-    const q=analysisBounds(edge,w,h);
-    const L=q.L,R=q.R,T=q.T,B=q.B;
-    const cw=R-L,ch=B-T;
-    if(cw<=4||ch<=4) return {score:0,details:{}};
-    if(side==='BACK'){
-      const whole=regionVisualStats(data,w,h,L,T,R,B);
-      const blueScore=clamp((whole.bluePct-.06)/.24*100,0,100);
-      const yellowScore=clamp((whole.yellowPct-.004)/.045*100,0,100);
-      const satScore=clamp((whole.sat-.18)/.32*100,0,100);
-      const score=clamp(blueScore*.46+yellowScore*.24+satScore*.30,0,100);
-      return {score,details:{whole}};
-    }
-    const top=regionVisualStats(data,w,h,L+cw*.05,T+ch*.03,R-cw*.05,T+ch*.20);
-    const art=regionVisualStats(data,w,h,L+cw*.06,T+ch*.18,R-cw*.06,T+ch*.60);
-    const lower=regionVisualStats(data,w,h,L+cw*.05,T+ch*.57,R-cw*.05,T+ch*.92);
-    const footer=regionVisualStats(data,w,h,L+cw*.04,T+ch*.88,R-cw*.04,T+ch*.985);
-    const topText=clamp((top.edgeDensity-.055)/.16*100,0,100);
-    const artComplexity=clamp((art.color-18)/45*100,0,100);
-    const lowerText=clamp((lower.edgeDensity-.07)/.18*100,0,100);
-    const footerText=clamp((footer.edgeDensity-.055)/.18*100,0,100);
-    const score=clamp(topText*.18+artComplexity*.27+lowerText*.33+footerText*.22,0,100);
-    return {score,details:{top,art,lower,footer}};
-  }
-
-  function normalizeOcr(text){
-    return (text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9/©®._\-\s]/g,' ');
-  }
-
-  function scorePokemonOcr(text, currentSide){
-    const t=normalizeOcr(text);
-    let score=0; const signals=[];
-    const add=(pts,name)=>{score+=pts;signals.push(name)};
-    if(/POK\s*[EÉ]?\s*MON|POKEMON/.test(t)) add(currentSide==='BACK'?70:32,'POKÉMON');
-    if(currentSide==='FRONT'){
-      if(/\bHP\s*\d{2,3}\b/.test(t)) add(32,'HP');
-      if(/\b\d{1,3}\s*\/\s*\d{2,3}\b/.test(t)) add(32,'card number');
-      if(/\b(?:SV|SWSH|SM|XY|BW|DP)[A-Z0-9\- ]{0,6}\d{1,3}\b/.test(t)) add(24,'set/promo code');
-      let legal=0;
-      for(const re of [/NINTENDO/,/CREATURES/,/GAME\s*FREAK/,/POKEMON/]) if(re.test(t)) legal++;
-      if(legal>=1) add(Math.min(28,10+legal*6),'legal line');
-      if(/\bTRAINER\b|\bENERGY\b|\bBASIC\b|\bSTAGE\s*[12]?\b/.test(t)) add(12,'TCG label');
-    }
-    return {score:clamp(score,0,100),signals,text:t.slice(0,600)};
-  }
-
-  function loadTesseractScript(){
-    if(window.Tesseract) return Promise.resolve();
-    if(tesseractScriptPromise) return tesseractScriptPromise;
-    tesseractScriptPromise=new Promise((resolve,reject)=>{
-      const s=document.createElement('script');
-      s.src=TESSERACT_URL; s.async=true;
-      s.onload=()=>resolve(); s.onerror=()=>reject(new Error('No se pudo cargar OCR'));
-      document.head.appendChild(s);
-    });
-    return tesseractScriptPromise;
-  }
-
-  async function getOcrWorker(){
-    await loadTesseractScript();
-    if(!ocrWorkerPromise){
-      pokemonOcrStatus='LOAD';
-      ocrWorkerPromise=window.Tesseract.createWorker('eng',1,{logger:m=>{
-        if(m.status==='loading language traineddata'||m.status==='initializing api') pokemonOcrStatus='LOAD';
-      }});
-    }
-    return ocrWorkerPromise;
-  }
-
-  function buildOcrComposite(edge){
-    const q=analysisBounds(edge,analysisCanvas.width,analysisCanvas.height);
-    const L=q.L,R=q.R,T=q.T,B=q.B;
-    const cw=Math.max(1,R-L), ch=Math.max(1,B-T);
-    const outW=720;
-    if(side==='BACK'){
-      const outH=Math.round(outW*(ch/cw));
-      ocrCanvas.width=outW;ocrCanvas.height=outH;
-      const c=ocrCanvas.getContext('2d');
-      c.drawImage(analysisCanvas,L,T,cw,ch,0,0,outW,outH);
-      return ocrCanvas;
-    }
-    const stripH=ch*.23;
-    const outStripH=Math.round(outW*(stripH/cw));
-    ocrCanvas.width=outW;ocrCanvas.height=outStripH*2+16;
-    const c=ocrCanvas.getContext('2d');
-    c.fillStyle='white';c.fillRect(0,0,ocrCanvas.width,ocrCanvas.height);
-    c.drawImage(analysisCanvas,L,T,cw,stripH,0,0,outW,outStripH);
-    c.drawImage(analysisCanvas,L,B-stripH,cw,stripH,0,outStripH+16,outW,outStripH);
-    return ocrCanvas;
-  }
-
-  async function maybeRunPokemonOCR(m){
-    const now=Date.now();
-    if(ocrBusy || now-lastOcrAt<OCR_INTERVAL_MS || !m) return;
-    // El Pokémon ID ya NO depende de aprobar primero los 4 bordes.
-    // Esto permite confirmar cartas reales aunque el detector geométrico esté todavía ajustándose.
-    if(m.sharpScore<OCR_MIN_SHARPNESS || m.motion<42) return;
-    ocrBusy=true; lastOcrAt=now; pokemonOcrStatus='SCAN';
+async function startCamera(){
+  try{
+    if(stream)stream.getTracks().forEach(t=>t.stop());
+    const constraints={audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440},aspectRatio:{ideal:4/3},frameRate:{ideal:30,max:30}}};
+    stream=await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject=stream; await video.play();
+    track=stream.getVideoTracks()[0];
     try{
-      const worker=await getOcrWorker();
-      const source=buildOcrComposite(m.edge);
-      const result=await worker.recognize(source);
-      const scored=scorePokemonOcr(result?.data?.text||'',side);
-      pokemonOcrScore=scored.score; pokemonOcrSignals=scored.signals; pokemonOcrText=scored.text;
-      pokemonOcrStatus='DONE';
-    }catch(err){
-      console.error(err); pokemonOcrStatus='ERROR'; pokemonOcrScore=0; pokemonOcrSignals=[];
-    }finally{
-      ocrBusy=false;
-    }
+      const caps=track.getCapabilities?.()||{};
+      const adv={};
+      if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';
+      if(caps.zoom&&typeof caps.zoom.min==='number')adv.zoom=clamp(1,caps.zoom.min,caps.zoom.max);
+      if(Object.keys(adv).length)await track.applyConstraints({advanced:[adv]});
+      buildZoomControls(caps);
+    }catch(e){console.log('camera capability note',e)}
+    document.getElementById('startScreen').classList.add('hidden');
+    layoutGuide();
+    cancelAnimationFrame(raf);loop();
+  }catch(err){
+    console.error(err);statusEl.textContent='SIN CÁMARA';statusEl.className='status bad';hintEl.textContent='Safari necesita permiso de cámara y una página HTTPS.';
   }
+}
+function buildZoomControls(caps){
+  const row=document.getElementById('zoomRow');row.innerHTML='';row.classList.remove('show');
+  if(!caps.zoom||typeof caps.zoom.min!=='number')return;
+  const candidates=[1,1.5,2].filter(z=>z>=caps.zoom.min&&z<=caps.zoom.max);
+  if(candidates.length<2)return;
+  candidates.forEach((z,i)=>{const b=document.createElement('button');b.type='button';b.className='tiny'+(i===0?' active':'');b.textContent=z+'×';b.addEventListener('click',async()=>{try{await track.applyConstraints({advanced:[{zoom:z}]});row.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}catch(e){}});row.appendChild(b)});row.classList.add('show');
+}
+function loop(){analyze();raf=requestAnimationFrame(loop)}
+function displayToVideoRect(){
+  const vw=video.videoWidth,vh=video.videoHeight,W=shell.clientWidth,H=shell.clientHeight;
+  if(!vw||!vh||!W||!H)return null;
+  // object-fit: contain mapping
+  const scale=Math.min(W/vw,H/vh),dw=vw*scale,dh=vh*scale,ox=(W-dw)/2,oy=(H-dh)/2;
+  const gx=guideNorm.x*W,gy=guideNorm.y*H,gw=guideNorm.w*W,gh=guideNorm.h*H;
+  const x=clamp((gx-ox)/scale,0,vw),y=clamp((gy-oy)/scale,0,vh);
+  const r=clamp((gx+gw-ox)/scale,0,vw),b=clamp((gy+gh-oy)/scale,0,vh);
+  return {x,y,w:Math.max(1,r-x),h:Math.max(1,b-y),vw,vh};
+}
+function analyze(){
+  if(video.readyState<2||!video.videoWidth)return;
+  const vr=displayToVideoRect();if(!vr)return;
+  const aw=240,ah=Math.max(180,Math.round(aw*(vr.h/vr.w)));
+  analysisCanvas.width=aw;analysisCanvas.height=ah;
+  aCtx.drawImage(video,vr.x,vr.y,vr.w,vr.h,0,0,aw,ah);
+  const img=aCtx.getImageData(0,0,aw,ah),d=img.data;
+  let sum=0,glare=0,dark=0;const gray=new Float32Array(aw*ah);
+  for(let i=0,p=0;i<d.length;i+=4,p++){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];gray[p]=y;sum+=y;if(y>247)glare++;if(y<12)dark++}
+  const mean=sum/gray.length,glarePct=100*glare/gray.length,darkPct=100*dark/gray.length;
+  let lapSum=0,lapSq=0,n=0;
+  for(let y=1;y<ah-1;y+=2)for(let x=1;x<aw-1;x+=2){const i=y*aw+x;const lap=4*gray[i]-gray[i-1]-gray[i+1]-gray[i-aw]-gray[i+aw];lapSum+=lap;lapSq+=lap*lap;n++}
+  const variance=Math.max(0,lapSq/n-(lapSum/n)**2);
+  const sharp=clamp((Math.sqrt(variance)-7)/25*100,0,100);
+  const exposure=clamp(100-Math.abs(mean-132)*1.25-darkPct*1.6,0,100);
+  const glareScore=clamp(100-glarePct*13,0,100);
+  const mini=makeMini(gray,aw,ah,24,32);let stable=100;
+  if(lastMini){let diff=0;for(let i=0;i<mini.length;i++)diff+=Math.abs(mini[i]-lastMini[i]);diff/=mini.length;stable=clamp(100-diff*5.3,0,100)}lastMini=mini;
+  const score=Math.round(sharp*.36+exposure*.25+glareScore*.25+stable*.14);
+  const ready=score>=READY_SCORE&&sharp>=62&&exposure>=55&&glareScore>=62&&stable>=72;
+  const manual=score>=MANUAL_SCORE&&sharp>=42&&exposure>=38&&glareScore>=38;
+  latest={score,sharp,exposure,glareScore,glarePct,stable,ready,manual,mean};render();
+  if(ready)stableFrames++;else stableFrames=0;
+  if(autoEl.checked&&stableFrames>=9&&Date.now()-lastShot>2500){stableFrames=0;capture(true)}
+}
+function makeMini(gray,w,h,mw,mh){const out=new Float32Array(mw*mh);for(let yy=0;yy<mh;yy++)for(let xx=0;xx<mw;xx++){const x=Math.min(w-1,Math.floor((xx+.5)/mw*w)),y=Math.min(h-1,Math.floor((yy+.5)/mh*h));out[yy*mw+xx]=gray[y*w+x]}return out}
+function render(){
+  qualityEl.textContent=latest.score;
+  if(latest.ready){statusEl.textContent='READY';statusEl.className='status good';hintEl.textContent='Calidad lista. Si los 4 bordes están dentro de la banda, dispara.'}
+  else if(latest.manual){statusEl.textContent='MANUAL OK';statusEl.className='status';hintEl.textContent=latest.glareScore<55?'Mueve la luz: hay reflejo fuerte':latest.sharp<55?'Aléjate un poco y mantén el teléfono quieto':'No necesitas encajar exacto: deja los 4 bordes dentro de la banda.'}
+  else{statusEl.textContent='AJUSTAR';statusEl.className='status bad';hintEl.textContent=latest.sharp<42?'Falta enfoque · prueba a 25–35 cm':latest.exposure<38?'Mejora la iluminación':latest.glareScore<38?'Demasiado reflejo':'Mantén el teléfono quieto'}
+  captureBtn.disabled=!latest.manual;
+  setMetric('mSharp',Math.round(latest.sharp),cssState(latest.sharp,62,42));
+  setMetric('mExposure',Math.round(latest.exposure),cssState(latest.exposure,55,38));
+  setMetric('mGlare',latest.glarePct.toFixed(1)+'%',latest.glareScore>=62?'ok':latest.glareScore>=38?'warn':'bad');
+  setMetric('mStable',Math.round(latest.stable),cssState(latest.stable,72,45));
+}
+async function capture(auto=false){
+  if(!video.videoWidth)return;lastShot=Date.now();
+  const w=video.videoWidth,h=video.videoHeight;captureCanvas.width=w;captureCanvas.height=h;capCtx.drawImage(video,0,0,w,h);
+  const originalBlob=await canvasBlob(captureCanvas,.96);revoke(originalUrl);originalUrl=URL.createObjectURL(originalBlob);
+  const vr=displayToVideoRect();
+  let padX=vr.w*.035,padY=vr.h*.025,x=clamp(vr.x-padX,0,w),y=clamp(vr.y-padY,0,h),cw=clamp(vr.w+2*padX,1,w-x),ch=clamp(vr.h+2*padY,1,h-y);
+  cropCanvas.width=Math.round(cw);cropCanvas.height=Math.round(ch);cropCtx.drawImage(captureCanvas,x,y,cw,ch,0,0,cropCanvas.width,cropCanvas.height);
+  const cropBlob=await canvasBlob(cropCanvas,.96);revoke(cropUrl);cropUrl=URL.createObjectURL(cropBlob);
+  currentView='crop';updateResult();
+  document.getElementById('captureInfo').textContent=`${side} · ${protection} · ${auto?'Auto':'Manual'} · ORIGINAL ${w}×${h} · GUIDE-CROP ${cropCanvas.width}×${cropCanvas.height}. El crop NO corrige perspectiva ni altera el original.`;
+  document.getElementById('resultSheet').classList.remove('hidden');
+}
+function canvasBlob(c,q){return new Promise(r=>c.toBlob(r,'image/jpeg',q))}
+function revoke(u){if(u)try{URL.revokeObjectURL(u)}catch(e){}}
+function updateResult(){const crop=currentView==='crop';document.getElementById('resultImage').src=crop?cropUrl:originalUrl;document.getElementById('cropTab').classList.toggle('active',crop);document.getElementById('originalTab').classList.toggle('active',!crop);document.getElementById('downloadCrop').href=cropUrl;document.getElementById('downloadOriginal').href=originalUrl}
+async function share(){const src=currentView==='crop'?cropCanvas:captureCanvas;const blob=await canvasBlob(src,.96);const file=new File([blob],currentView==='crop'?'LXR-guide-crop.jpg':'LXR-original.jpg',{type:'image/jpeg'});if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'LXR Card Camera'})}catch(e){}}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click()}}
 
-  function computeMetrics(data, w, h) {
-    const gray = new Float32Array(w*h);
-    let sum=0, hi=0, lo=0;
-    for (let i=0,p=0;i<data.length;i+=4,p++) {
-      const y = 0.2126*data[i] + 0.7152*data[i+1] + 0.0722*data[i+2];
-      gray[p]=y; sum+=y;
-      if (y>=247) hi++;
-      if (y<=15) lo++;
-    }
-    const mean = sum / gray.length;
-    const glarePct = hi / gray.length * 100;
-    const blackPct = lo / gray.length * 100;
-
-    let lapSum=0, lapSq=0, lapN=0;
-    for (let y=1;y<h-1;y+=2) for (let x=1;x<w-1;x+=2) {
-      const p=y*w+x;
-      const lap = -4*gray[p] + gray[p-1]+gray[p+1]+gray[p-w]+gray[p+w];
-      lapSum+=lap; lapSq+=lap*lap; lapN++;
-    }
-    const lapMean=lapSum/lapN;
-    const sharpVar=Math.max(0,lapSq/lapN-lapMean*lapMean);
-    const sharpScore=clamp((Math.log10(sharpVar+1)-1.55)/1.25*100,0,100);
-
-    const edge = detectCardGeometry(gray,w,h);
-    const ratioScore = edge.geometryPossible
-      ? clamp(100 - Math.abs(edge.ratio-CARD_RATIO)/CARD_RATIO*360,0,100)
-      : 0;
-    // “Cobertura” solo describe si hay margen suficiente alrededor de la carta.
-    // Ya NO representa cercanía al marco y NO bloquea la captura.
-    const framingScore = edge.geometryPossible ? edge.visibilityScore : 0;
-    const cardScore = edge.cardScore;
-    const pokemonVisual = computePokemonVisual(data,w,h,edge);
-    const pokemonScore = clamp(pokemonVisual.score*0.35 + pokemonOcrScore*0.65,0,100);
-    const pokemonEvidence = side==='BACK'
-      ? (pokemonOcrScore>=58 && pokemonVisual.score>=30)
-      : (pokemonOcrScore>=42 && pokemonVisual.score>=25);
-
-    const exposurePenalty = Math.abs(mean-128)*0.75 + Math.max(0,glarePct-1.2)*8 + Math.max(0,blackPct-3)*4;
-    const exposureScore = clamp(100-exposurePenalty,0,100);
-    const glareScore = clamp(100-glarePct*13,0,100);
-
-    const mini = makeMini(gray,w,h,24,34);
-    let motion = 100;
-    if (previousMini) {
-      let diff=0;
-      for (let i=0;i<mini.length;i++) diff += Math.abs(mini[i]-previousMini[i]);
-      const mad = diff/mini.length;
-      motion = clamp(100-mad*8.5,0,100);
-    }
-    previousMini=mini;
-
-    const rawScore = Math.round(
-      cardScore*0.25 + pokemonScore*0.25 + ratioScore*0.04 + sharpScore*0.18 +
-      exposureScore*0.10 + glareScore*0.08 + motion*0.10
-    );
-    let score = edge.geometryPossible ? rawScore : Math.min(rawScore, 42);
-    if(edge.geometryPossible && !pokemonEvidence) score=Math.min(score,66);
-
-    const gates = {
-      card: edge.found && cardScore >= 47,
-      pokemon: pokemonEvidence && pokemonScore >= 49,
-      framing: framingScore >= 18,
-      ratio: ratioScore >= 48,
-      sharp: sharpScore >= 62,
-      exposure: exposureScore >= 62,
-      glare: glareScore >= 68,
-      stable: motion >= 74
-    };
-    // El encuadre/centrado deja de ser una compuerta. Ratio también se relaja porque
-    // pequeñas perspectivas se corrigen con AUTO-CROP y no deben frustrar la toma.
-    const ready = score >= STRICT_READY_SCORE && gates.card && gates.pokemon && gates.sharp && gates.exposure && gates.glare && gates.stable;
-    const manualReady = gates.pokemon && cardScore>=38 && sharpScore>=55 && exposureScore>=52 && glareScore>=55;
-
-    let hint='MODO LIBRE · deja la carta completa dentro de la vista';
-    if (!gates.card && gates.pokemon) hint='Pokémon confirmado · mueve o aleja un poco hasta que vea los 4 bordes';
-    else if (!gates.card) hint='Buscando carta por toda la imagen · no la centres, solo deja visibles los 4 bordes';
-    else if (!gates.pokemon) {
-      if(pokemonOcrStatus==='LOAD') hint='Cargando verificador Pokémon…';
-      else if(pokemonOcrStatus==='SCAN') hint='Verificando Pokémon TCG…';
-      else if(pokemonOcrStatus==='ERROR') hint='No pude cargar el verificador Pokémon. Revisa tu conexión.';
-      else hint='Carta encontrada · verificando que sea Pokémon TCG';
-    }
-    else if (!gates.sharp) hint='Acerca/aleja un poco hasta que el texto quede nítido';
-    else if (!gates.exposure) hint=mean<88?'Falta luz':'Hay demasiada luz';
-    else if (!gates.glare) hint='Mueve la luz o inclina ligeramente: hay reflejo fuerte';
-    else if (!gates.stable) hint='Mantén el teléfono quieto';
-    else if (ready) hint='READY · encuadre libre · AUTO-CROP listo';
-    else if (manualReady) hint='Puedes disparar manualmente · Auto Capture espera una detección más estable';
-
-    return {score,ready,manualReady,gates,cardScore,pokemonScore,pokemonVisualScore:pokemonVisual.score,pokemonOcrScore,pokemonOcrStatus,pokemonOcrSignals,framingScore,ratioScore,sharpScore,exposureScore,glareScore,motion,mean,glarePct,ratio:edge.ratio,hint,edge};
-  }
-
-  function median(values) {
-    if (!values.length) return 0;
-    const a = [...values].sort((x,y)=>x-y);
-    const m = Math.floor(a.length/2);
-    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
-  }
-
-  function percentile(values, q) {
-    if (!values.length) return 0;
-    const a = [...values].sort((x,y)=>x-y);
-    const i = clamp(Math.round((a.length-1)*q),0,a.length-1);
-    return a[i];
-  }
-
-  function lineFit(samples, axisLength) {
-    if (!samples.length) return {median:0,continuity:0,straightness:0,strength:0,slope:0};
-    const mags=samples.map(s=>s.mag);
-    // Umbral adaptativo: evita que texturas débiles del fondo cuenten como borde.
-    const adaptive=Math.max(7.5, percentile(mags,0.35)*1.25);
-    const strong=samples.filter(s=>s.mag>=adaptive);
-    if (!strong.length) return {median:0,continuity:0,straightness:0,strength:0,slope:0};
-    const med=median(strong.map(s=>s.pos));
-    const tolerance=Math.max(3,axisLength*0.018);
-    const inliers=strong.filter(s=>Math.abs(s.pos-med)<=tolerance);
-    const continuity=inliers.length/samples.length;
-    const deviations=inliers.map(s=>Math.abs(s.pos-med));
-    const mad=median(deviations);
-    const straightness=clamp(1-mad/(tolerance*1.35),0,1);
-    const strength=clamp((median(inliers.map(s=>s.mag))-7)/22,0,1);
-
-    // Regresión simple para detectar lados diagonales/ruidosos.
-    let sx=0,sy=0,sxx=0,sxy=0,n=0;
-    for(const s of inliers){sx+=s.t;sy+=s.pos;sxx+=s.t*s.t;sxy+=s.t*s.pos;n++;}
-    const den=n*sxx-sx*sx;
-    const slope=Math.abs(den ? (n*sxy-sx*sy)/den : 0);
-    return {median:med,continuity,straightness,strength,slope};
-  }
-
-  function scanVertical(gray,w,h,center,band) {
-    const samples=[];
-    const y0=Math.round(h*.14), y1=Math.round(h*.86);
-    for(let y=y0;y<=y1;y+=3){
-      let bestPos=-1,bestMag=-1;
-      const a=Math.max(2,Math.round(center-band)), b=Math.min(w-3,Math.round(center+band));
-      for(let x=a;x<=b;x++){
-        const mag=Math.abs(gray[y*w+x+1]-gray[y*w+x-1]);
-        if(mag>bestMag){bestMag=mag;bestPos=x;}
-      }
-      samples.push({t:(y-y0)/Math.max(1,y1-y0),pos:bestPos,mag:bestMag});
-    }
-    return lineFit(samples,w);
-  }
-
-  function scanHorizontal(gray,w,h,center,band) {
-    const samples=[];
-    const x0=Math.round(w*.14), x1=Math.round(w*.86);
-    for(let x=x0;x<=x1;x+=3){
-      let bestPos=-1,bestMag=-1;
-      const a=Math.max(2,Math.round(center-band)), b=Math.min(h-3,Math.round(center+band));
-      for(let y=a;y<=b;y++){
-        const mag=Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]);
-        if(mag>bestMag){bestMag=mag;bestPos=y;}
-      }
-      samples.push({t:(x-x0)/Math.max(1,x1-x0),pos:bestPos,mag:bestMag});
-    }
-    return lineFit(samples,h);
-  }
-
-  function stripContrast(gray,w,h,L,R,T,B) {
-    const d=Math.max(2,Math.round(Math.min(w,h)*.012));
-    const span=Math.max(3,Math.round(Math.min(w,h)*.018));
-    const means=[];
-    const meanRect=(x0,y0,x1,y1)=>{
-      x0=clamp(Math.round(x0),0,w-1); x1=clamp(Math.round(x1),0,w-1);
-      y0=clamp(Math.round(y0),0,h-1); y1=clamp(Math.round(y1),0,h-1);
-      let s=0,n=0;
-      for(let y=y0;y<=y1;y+=2) for(let x=x0;x<=x1;x+=2){s+=gray[y*w+x];n++;}
-      return n?s/n:0;
-    };
-    const y0=T+Math.round((B-T)*.16), y1=B-Math.round((B-T)*.16);
-    const x0=L+Math.round((R-L)*.16), x1=R-Math.round((R-L)*.16);
-    means.push(Math.abs(meanRect(L+d,y0,L+d+span,y1)-meanRect(L-d-span,y0,L-d,y1)));
-    means.push(Math.abs(meanRect(R-d-span,y0,R-d,y1)-meanRect(R+d,y0,R+d+span,y1)));
-    means.push(Math.abs(meanRect(x0,T+d,x1,T+d+span)-meanRect(x0,T-d-span,x1,T-d)));
-    means.push(Math.abs(meanRect(x0,B-d-span,x1,B-d)-meanRect(x0,B+d,x1,B+d+span)));
-    return clamp(median(means)/16,0,1);
-  }
-
-  function detectCardGeometry(gray,w,h) {
-    // Búsqueda global multi-escala. Ya no presupone que la carta está cerca del marco.
-    // Está optimizada para una carta aproximadamente vertical; tolera perspectiva moderada
-    // explorando varias relaciones ancho/alto alrededor de 63:88.
-    const ratios=[CARD_RATIO*.88,CARD_RATIO*.94,CARD_RATIO,CARD_RATIO*1.06,CARD_RATIO*1.12];
-    const minH=Math.max(64,h*.28), maxH=h*.82;
-    const heights=[];
-    for(let i=0;i<8;i++) heights.push(minH+(maxH-minH)*(i/7));
-
-    const vGrad=(x,y)=>{
-      x=clamp(Math.round(x),2,w-3); y=clamp(Math.round(y),1,h-2);
-      let best=0;
-      for(let d=-2;d<=2;d++) best=Math.max(best,Math.abs(gray[y*w+x+d+1]-gray[y*w+x+d-1]));
-      return best;
-    };
-    const hGrad=(x,y)=>{
-      x=clamp(Math.round(x),1,w-2); y=clamp(Math.round(y),2,h-3);
-      let best=0;
-      for(let d=-2;d<=2;d++) best=Math.max(best,Math.abs(gray[(y+d+1)*w+x]-gray[(y+d-1)*w+x]));
-      return best;
-    };
-    const sideStats=(vals)=>{
-      const thr=9.5;
-      const avg=vals.reduce((a,b)=>a+b,0)/Math.max(1,vals.length);
-      const cont=vals.filter(v=>v>=thr).length/Math.max(1,vals.length);
-      return {avg,cont};
-    };
-    const contrastAt=(x,y,dx,dy)=>{
-      const sample=(xx,yy)=>gray[clamp(Math.round(yy),0,h-1)*w+clamp(Math.round(xx),0,w-1)];
-      return Math.abs(sample(x+dx*3,y+dy*3)-sample(x-dx*3,y-dy*3));
-    };
-
-    let best=null;
-    for(const ch of heights){
-      for(const ratio of ratios){
-        const cw=ch*ratio;
-        if(cw>w*.88) continue;
-        const xStep=Math.max(7,Math.round(cw*.11));
-        const yStep=Math.max(8,Math.round(ch*.09));
-        const xMin=cw/2+3, xMax=w-cw/2-3;
-        const yMin=ch/2+3, yMax=h-ch/2-3;
-        for(let cy=yMin;cy<=yMax;cy+=yStep){
-          for(let cx=xMin;cx<=xMax;cx+=xStep){
-            const L=cx-cw/2,R=cx+cw/2,T=cy-ch/2,B=cy+ch/2;
-            const lv=[],rv=[],tv=[],bv=[];
-            const nV=18,nH=14;
-            for(let i=1;i<nV;i++){
-              const y=T+ch*(i/nV);
-              lv.push(vGrad(L,y)); rv.push(vGrad(R,y));
-            }
-            for(let i=1;i<nH;i++){
-              const x=L+cw*(i/nH);
-              tv.push(hGrad(x,T)); bv.push(hGrad(x,B));
-            }
-            const ss=[sideStats(lv),sideStats(rv),sideStats(tv),sideStats(bv)];
-            const continuity=ss.reduce((a,z)=>a+z.cont,0)/4;
-            const worstContinuity=Math.min(...ss.map(z=>z.cont));
-            const avgEdge=ss.reduce((a,z)=>a+z.avg,0)/4;
-            const strength=clamp((avgEdge-7)/23,0,1);
-            const contrastVals=[
-              contrastAt(L,cy,1,0),contrastAt(R,cy,1,0),
-              contrastAt(cx,T,0,1),contrastAt(cx,B,0,1)
-            ];
-            const contrast=clamp(median(contrastVals)/18,0,1);
-            const ratioCloseness=clamp(1-Math.abs(ratio-CARD_RATIO)/(CARD_RATIO*.16),0,1);
-            // Penalización muy suave si la candidata toca demasiado el borde del frame.
-            const margin=Math.min(L/w,(w-R)/w,T/h,(h-B)/h);
-            const visibilityScore=clamp((margin+.015)/.075*100,0,100);
-            const sizeScore=clamp((ch/h-.25)/.45,0,1);
-            const cardScore=clamp(100*(continuity*.50+strength*.28+contrast*.10+ratioCloseness*.07+sizeScore*.05),0,100);
-            const rank=cardScore + Math.min(12,visibilityScore*.08);
-            if(!best || rank>best.rank){
-              best={rank,cx,cy,cw,ch,L,R,T,B,ratio,continuity,worstContinuity,strength,contrast,ratioCloseness,visibilityScore,cardScore};
-            }
-          }
-        }
-      }
-    }
-
-    if(!best){
-      const z={median:0,continuity:0,straightness:0,strength:0,slope:0};
-      return {found:false,geometryPossible:false,cardScore:0,ratio:CARD_RATIO,fitError:1,visibilityScore:0,continuity:0,worstContinuity:0,straight:0,strength:0,contrast:0,maxSlope:0,L:z,R:z,T:z,B:z};
-    }
-    const mk=(medianValue,cont)=>({median:medianValue,continuity:cont,straightness:1,strength:best.strength,slope:0});
-    const geometryPossible=true;
-    // Como Pokémon ID es una compuerta separada, aquí preferimos sensibilidad sobre agresividad.
-    const found=best.cardScore>=46 && best.continuity>=0.36 && best.worstContinuity>=0.18;
-    return {
-      found,geometryPossible,cardScore:best.cardScore,ratio:best.ratio,fitError:0,
-      visibilityScore:best.visibilityScore,continuity:best.continuity,worstContinuity:best.worstContinuity,
-      straight:1,strength:best.strength,contrast:best.contrast,maxSlope:0,
-      L:mk(best.L,sideStatsFor(best,'L')),R:mk(best.R,sideStatsFor(best,'R')),
-      T:mk(best.T,sideStatsFor(best,'T')),B:mk(best.B,sideStatsFor(best,'B'))
-    };
-
-    function sideStatsFor(b,which){
-      // Conservamos una continuidad aproximada por lado para compatibilidad con el resto del pipeline.
-      // La continuidad global ya se usó para seleccionar la mejor candidata.
-      return b.continuity;
-    }
-  }
-
-  function makeMini(gray,w,h,mw,mh){
-    const out=new Float32Array(mw*mh);
-    for(let yy=0;yy<mh;yy++) for(let xx=0;xx<mw;xx++){
-      const x=Math.min(w-1,Math.floor((xx+.5)/mw*w));
-      const y=Math.min(h-1,Math.floor((yy+.5)/mh*h));
-      out[yy*mw+xx]=gray[y*w+x];
-    }
-    return out;
-  }
-
-  function analysisEdgeToVideoRect(edge,map){
-    if(!edge?.geometryPossible || !map) return null;
-    const L=clamp(edge.L.median,0,map.aw), R=clamp(edge.R.median,0,map.aw);
-    const T=clamp(edge.T.median,0,map.ah), B=clamp(edge.B.median,0,map.ah);
-    if(R-L<map.aw*.14 || B-T<map.ah*.24) return null;
-    return {
-      x: map.sx + (L/map.aw)*map.sw,
-      y: map.sy + (T/map.ah)*map.sh,
-      w: ((R-L)/map.aw)*map.sw,
-      h: ((B-T)/map.ah)*map.sh
-    };
-  }
-
-  function videoRectToViewRect(rect){
-    if(!rect || !video.videoWidth || !video.videoHeight) return null;
-    const vr=video.getBoundingClientRect();
-    const videoAspect=video.videoWidth/video.videoHeight;
-    const viewAspect=vr.width/vr.height;
-    let renderedW,renderedH,offX=0,offY=0;
-    // CSS object-fit: contain: mostramos el frame completo y calculamos sus barras vacías.
-    if(videoAspect>viewAspect){
-      renderedW=vr.width; renderedH=renderedW/videoAspect; offY=(vr.height-renderedH)/2;
-    } else {
-      renderedH=vr.height; renderedW=renderedH*videoAspect; offX=(vr.width-renderedW)/2;
-    }
-    return {
-      left:vr.left + offX + rect.x/video.videoWidth*renderedW,
-      top:vr.top + offY + rect.y/video.videoHeight*renderedH,
-      width:rect.w/video.videoWidth*renderedW,
-      height:rect.h/video.videoHeight*renderedH
-    };
-  }
-
-  function updateDetectedBox(edge,map){
-    const videoRect=analysisEdgeToVideoRect(edge,map);
-    if(!videoRect || (edge.cardScore||0)<34){detectedBox.style.display='none';return;}
-    const r=videoRectToViewRect(videoRect);
-    if(!r){detectedBox.style.display='none';return;}
-    detectedBox.style.display='block';
-    detectedBox.style.left=`${r.left}px`;
-    detectedBox.style.top=`${r.top}px`;
-    detectedBox.style.width=`${r.width}px`;
-    detectedBox.style.height=`${r.height}px`;
-  }
-
-  function paddedCropRect(rect,frameW,frameH){
-    if(!rect) return null;
-    let x=rect.x-rect.w*AUTO_CROP_PAD, y=rect.y-rect.h*AUTO_CROP_PAD;
-    let w=rect.w*(1+2*AUTO_CROP_PAD), h=rect.h*(1+2*AUTO_CROP_PAD);
-    // Expandir, nunca recortar la carta, para acercar el resultado a 63:88.
-    const ratio=w/h;
-    if(ratio>CARD_RATIO){const nh=w/CARD_RATIO; y-=(nh-h)/2; h=nh;}
-    else{const nw=h*CARD_RATIO; x-=(nw-w)/2; w=nw;}
-    x=clamp(x,0,frameW-1); y=clamp(y,0,frameH-1);
-    w=clamp(w,1,frameW-x); h=clamp(h,1,frameH-y);
-    return {x,y,w,h};
-  }
-
-  function setResultView(which){
-    currentResultView=which;
-    const useCrop=which==='crop' && cropUrl;
-    capturedImage.src=useCrop?cropUrl:capturedUrl;
-    viewCropBtn.classList.toggle('active',!!useCrop);
-    viewOriginalBtn.classList.toggle('active',!useCrop);
-  }
-
-  function state(score, good=72, warn=50){ return score>=good?'ok':score>=warn?'warn':'bad'; }
-  function label(score){ return score>=80?'OK':score>=60?'JUSTO':'FALLA'; }
-
-  function renderMetrics(m) {
-    qualityScore.textContent = m.score;
-    setMetric(metricEls.framing,label(m.framingScore),state(m.framingScore,55,25));
-    setMetric(metricEls.ratio,m.gates.card?'DETECTADA':Math.round(m.cardScore)+'%',m.gates.card?'ok':m.cardScore>=38?'warn':'bad');
-    const pkText=m.gates.pokemon?'CONFIRMADO':(m.pokemonOcrStatus==='SCAN'||m.pokemonOcrStatus==='LOAD'?'VERIFICANDO':Math.round(m.pokemonScore)+'%');
-    setMetric(metricEls.pokemon,pkText,m.gates.pokemon?'ok':m.pokemonScore>=44?'warn':'bad');
-    setMetric(metricEls.sharp,Math.round(m.sharpScore),state(m.sharpScore,62,48));
-    setMetric(metricEls.exposure,Math.round(m.exposureScore),state(m.exposureScore,62,48));
-    setMetric(metricEls.glare,m.glarePct.toFixed(1)+'%',m.glareScore>=68?'ok':m.glareScore>=50?'warn':'bad');
-    setMetric(metricEls.stable,Math.round(m.motion),state(m.motion,74,56));
-    cameraMessage.textContent=m.hint;
-
-    if(m.ready){
-      readyStreak++;
-      guide.className='guide state-good';
-      readyBadge.className='badge badge-good'; readyBadge.textContent='READY';
-      captureBtn.disabled=false;
-      if(autoCapture.checked && readyStreak>=READY_STREAK_REQUIRED && Date.now()-lastCaptureAt>3200){
-        capturePhoto(true);
-      }
-    } else {
-      readyStreak=0;
-      captureBtn.disabled=!m.manualReady;
-      if(m.manualReady){
-        guide.className='guide state-warn';readyBadge.className='badge badge-warn';readyBadge.textContent='MANUAL OK';
-      } else if(m.score>=62){
-        guide.className='guide state-warn';readyBadge.className='badge badge-warn';readyBadge.textContent='AJUSTAR';
-      } else {
-        guide.className='guide state-bad';readyBadge.className='badge badge-bad';readyBadge.textContent='BUSCANDO';
-      }
-    }
-  }
-
-  async function capturePhoto(auto=false){
-    if(!stream || !video.videoWidth || (auto ? !latestMetrics?.ready : !(latestMetrics?.ready || latestMetrics?.manualReady))) return;
-    lastCaptureAt=Date.now();
-    readyStreak=0;
-    const w=video.videoWidth,h=video.videoHeight;
-    captureCanvas.width=w; captureCanvas.height=h;
-    const ctx=captureCanvas.getContext('2d');
-    ctx.drawImage(video,0,0,w,h);
-
-    capturedBlob=await new Promise(res=>captureCanvas.toBlob(res,'image/jpeg',0.97));
-    if(!capturedBlob) return;
-    if(capturedUrl) URL.revokeObjectURL(capturedUrl);
-    capturedUrl=URL.createObjectURL(capturedBlob);
-
-    cropBlob=null;
-    if(cropUrl){URL.revokeObjectURL(cropUrl);cropUrl=null;}
-    const detectedRect=analysisEdgeToVideoRect(latestMetrics?.edge,latestAnalysisMap);
-    const cr=paddedCropRect(detectedRect,w,h);
-    if(cr){
-      const outW=Math.min(1800,Math.max(900,Math.round(cr.w)));
-      const outH=Math.round(outW/CARD_RATIO);
-      cropCanvas.width=outW; cropCanvas.height=outH;
-      const cc=cropCanvas.getContext('2d');
-      cc.drawImage(captureCanvas,cr.x,cr.y,cr.w,cr.h,0,0,outW,outH);
-      cropBlob=await new Promise(res=>cropCanvas.toBlob(res,'image/jpeg',0.97));
-      if(cropBlob) cropUrl=URL.createObjectURL(cropBlob);
-    }
-
-    downloadBtn.href=cropUrl||capturedUrl;
-    originalDownloadBtn.href=capturedUrl;
-    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
-    downloadBtn.download=`LXR-${side}-ANALYSIS-${stamp}.jpg`;
-    originalDownloadBtn.download=`LXR-${side}-ORIGINAL-${stamp}.jpg`;
-    document.getElementById('captureMeta').textContent=`${side} · Original ${w}×${h}${cropUrl?' · AUTO-CROP listo':''}`;
-    const m=latestMetrics;
-    captureStats.innerHTML=`<div>Quality<b>${m.score}/100</b></div><div>Pokémon ID<b>${Math.round(m.pokemonScore)}%</b></div><div>Sharpness<b>${Math.round(m.sharpScore)}</b></div><div>Glare<b>${m.glarePct.toFixed(1)}%</b></div>`;
-    setResultView(cropUrl?'crop':'original');
-    resultSheet.classList.remove('hidden'); resultSheet.setAttribute('aria-hidden','false');
-  }
-
-  async function shareCapture(){
-    if(!capturedBlob) return;
-    const blob=(currentResultView==='crop'&&cropBlob)?cropBlob:capturedBlob;
-    const file=new File([blob],`LXR-${side}-${currentResultView==='crop'?'ANALYSIS':'ORIGINAL'}.jpg`,{type:'image/jpeg'});
-    try{
-      if(navigator.canShare?.({files:[file]})) await navigator.share({files:[file],title:'LXR Card Capture'});
-      else downloadBtn.click();
-    }catch(e){ if(e.name!=='AbortError') console.error(e); }
-  }
-
-  startBtn.addEventListener('click',startCamera);
-  captureBtn.addEventListener('click',()=>capturePhoto(false));
-  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · FREE DETECT v0.6`;pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';readyStreak=0;});
-  shareBtn.addEventListener('click',shareCapture);
-  viewCropBtn.addEventListener('click',()=>setResultView('crop'));
-  viewOriginalBtn.addEventListener('click',()=>setResultView('original'));
-  retakeBtn.addEventListener('click',()=>resultSheet.classList.add('hidden'));
-  closeResult.addEventListener('click',()=>resultSheet.classList.add('hidden'));
-  document.getElementById('helpBtn').addEventListener('click',()=>helpSheet.classList.remove('hidden'));
-  document.getElementById('closeHelp').addEventListener('click',()=>helpSheet.classList.add('hidden'));
-  detailsBtn.addEventListener('click',()=>{metricsGrid.classList.toggle('open');detailsBtn.textContent=metricsGrid.classList.contains('open')?'Ocultar':'Detalles';});
-  document.addEventListener('visibilitychange',()=>{ if(document.hidden) readyStreak=0; });
-
+let protIdx=0;const protModes=['RAW','SLEEVE','TOPLOADER'];
+document.getElementById('startBtn').addEventListener('click',startCamera);
+document.getElementById('restartBtn').addEventListener('click',()=>{lastMini=null;stableFrames=0;startCamera()});
+captureBtn.addEventListener('click',()=>capture(false));
+document.getElementById('sideBtn').addEventListener('click',e=>{side=side==='FRONT'?'BACK':'FRONT';e.currentTarget.textContent=side});
+document.getElementById('protectionBtn').addEventListener('click',e=>{protIdx=(protIdx+1)%protModes.length;protection=protModes[protIdx];e.currentTarget.textContent=protection==='RAW'?'Raw card':protection==='SLEEVE'?'Sleeve':'Top loader';layoutGuide()});
+document.getElementById('detailsBtn').addEventListener('click',()=>document.getElementById('metrics').classList.toggle('show'));
+document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpSheet').classList.remove('hidden'));
+document.getElementById('closeHelp').addEventListener('click',()=>document.getElementById('helpSheet').classList.add('hidden'));
+document.getElementById('closeResult').addEventListener('click',()=>document.getElementById('resultSheet').classList.add('hidden'));
+document.getElementById('retakeBtn').addEventListener('click',()=>document.getElementById('resultSheet').classList.add('hidden'));
+document.getElementById('cropTab').addEventListener('click',()=>{currentView='crop';updateResult()});
+document.getElementById('originalTab').addEventListener('click',()=>{currentView='original';updateResult()});
+document.getElementById('shareBtn').addEventListener('click',share);
+layoutGuide();
 })();
-
-  </script>
+</script>
 </body>
 </html>
