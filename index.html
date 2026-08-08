@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LXR Card Cam" />
+  <style>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:rgba(10,12,18,.78);--text:#f5f7fb;--muted:#aeb5c2;--line:rgba(255,255,255,.16);--good:#54e38e;--warn:#ffd166;--bad:#ff6472;--accent:#8b7cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overscroll-behavior:none}
+body{min-height:100dvh}
+button,a{font:inherit}
+.camera-shell{position:relative;width:100%;height:100dvh;overflow:hidden;background:#050608}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#050608}
+#analysisCanvas,#captureCanvas{display:none}
+.topbar{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 14px) 18px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,0))}
+.brand{font-size:14px;font-weight:750;letter-spacing:.12em}.sub{margin-top:4px;color:var(--muted);font-size:12px;letter-spacing:.05em}
+.ghost-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);font-size:20px}
+.guide{--guide-color:rgba(255,255,255,.75);position:absolute;z-index:3;left:50%;top:46%;width:min(72vw,340px);aspect-ratio:63/88;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--guide-color) 50%,transparent);border-radius:13px;box-shadow:0 0 0 200vmax rgba(0,0,0,.24);transition:.18s ease}
+.guide.state-good{--guide-color:var(--good)}.guide.state-warn{--guide-color:var(--warn)}.guide.state-bad{--guide-color:var(--bad)}
+.corner{position:absolute;width:44px;height:44px;border-color:var(--guide-color);border-style:solid}.tl{left:-3px;top:-3px;border-width:4px 0 0 4px;border-radius:13px 0 0 0}.tr{right:-3px;top:-3px;border-width:4px 4px 0 0;border-radius:0 13px 0 0}.bl{left:-3px;bottom:-3px;border-width:0 0 4px 4px;border-radius:0 0 0 13px}.br{right:-3px;bottom:-3px;border-width:0 4px 4px 0;border-radius:0 0 13px 0}
+.guide-label{position:absolute;left:50%;top:-34px;transform:translateX(-50%);font-size:11px;white-space:nowrap;color:var(--guide-color);font-weight:700;letter-spacing:.1em;text-shadow:0 1px 6px #000}
+.camera-message{position:absolute;z-index:4;left:50%;top:calc(46% + min(51vw,242px));transform:translate(-50%,12px);max-width:88vw;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.55);font-size:13px;text-align:center;backdrop-filter:blur(12px)}
+.bottom-panel{position:absolute;z-index:6;bottom:0;left:0;right:0;padding:14px 16px calc(env(safe-area-inset-bottom) + 12px);background:linear-gradient(to top,rgba(3,4,8,.96),rgba(3,4,8,.68),transparent);padding-top:48px}
+.score-row{display:flex;align-items:end;justify-content:space-between;margin-bottom:10px}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.15em}.score{font-size:36px;font-weight:750;font-variant-numeric:tabular-nums}.score-den{font-size:15px;color:var(--muted)}
+.badge{padding:7px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.08em}.badge-wait{background:rgba(255,255,255,.1)}.badge-good{color:#082413;background:var(--good)}.badge-warn{color:#2b2102;background:var(--warn)}.badge-bad{color:#2b060a;background:var(--bad)}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}.metric{padding:8px 9px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.30);backdrop-filter:blur(10px)}.metric span{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin-top:3px;font-size:12px;font-weight:700}.ok{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.switch-row{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;align-items:center;font-size:12px;color:var(--muted)}.switch-row input{accent-color:var(--accent)}
+.primary-btn,.secondary-btn{min-height:44px;border-radius:14px;border:1px solid var(--line);padding:10px 12px;font-weight:700}.primary-btn{background:var(--text);color:#101218;border-color:transparent}.secondary-btn{background:rgba(0,0,0,.35);color:var(--text)}
+.shutter{width:68px;height:68px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,.14);padding:5px}.shutter span{display:block;width:100%;height:100%;border-radius:50%;background:white;transition:.15s}.shutter:disabled{opacity:.35}.shutter:not(:disabled):active span{transform:scale(.88)}
+.sheet{position:fixed;z-index:20;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.65);backdrop-filter:blur(8px)}.hidden{display:none}.sheet-card{width:100%;max-height:92dvh;overflow:auto;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);background:#11141b;border-radius:24px 24px 0 0}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-card img{display:block;width:100%;max-height:56dvh;object-fit:contain;background:#08090c;border-radius:16px;border:1px solid var(--line)}
+.capture-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.capture-stats div{padding:9px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12px}.capture-stats b{display:block;font-size:16px;margin-top:2px}.sheet-actions{display:grid;gap:9px}.link-btn{text-decoration:none;text-align:center}.help-card ol{padding-left:22px;color:#e6e9ef}.help-card li{margin:10px 0}.fineprint{font-size:12px;color:var(--muted)}
+@media(min-width:700px){.camera-shell{max-width:520px;margin:0 auto}.sheet-card{max-width:520px;margin:0 auto}}
+
+  </style>
+  <title>LXR Card Camera</title>
+</head>
+<body>
+  <main id="app">
+    <section class="camera-shell">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="analysisCanvas" aria-hidden="true"></canvas>
+      <canvas id="captureCanvas" aria-hidden="true"></canvas>
+
+      <div class="topbar">
+        <div>
+          <div class="brand">LXR CARD CAMERA</div>
+          <div class="sub" id="stepLabel">FRONT · VALIDATOR v0.1</div>
+        </div>
+        <button id="helpBtn" class="ghost-btn" type="button" aria-label="Ayuda">?</button>
+      </div>
+
+      <div id="guide" class="guide state-idle" aria-hidden="true">
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+        <div class="guide-label">ALINEA LA CARTA</div>
+      </div>
+
+      <div id="cameraMessage" class="camera-message">Pulsa “Iniciar cámara”</div>
+
+      <div class="bottom-panel">
+        <div class="score-row">
+          <div>
+            <span class="eyebrow">QUALITY</span>
+            <div><span id="qualityScore" class="score">--</span><span class="score-den">/100</span></div>
+          </div>
+          <div id="readyBadge" class="badge badge-wait">ESPERANDO</div>
+        </div>
+
+        <div class="metrics-grid" aria-live="polite">
+          <div class="metric"><span>Encuadre</span><strong id="mFraming">—</strong></div>
+          <div class="metric"><span>Proporción</span><strong id="mRatio">—</strong></div>
+          <div class="metric"><span>Enfoque</span><strong id="mSharp">—</strong></div>
+          <div class="metric"><span>Exposición</span><strong id="mExposure">—</strong></div>
+          <div class="metric"><span>Glare</span><strong id="mGlare">—</strong></div>
+          <div class="metric"><span>Estabilidad</span><strong id="mStable">—</strong></div>
+        </div>
+
+        <div class="controls">
+          <label class="switch-row">
+            <span>Auto Capture</span>
+            <input id="autoCapture" type="checkbox" checked />
+          </label>
+          <button id="startBtn" class="primary-btn" type="button">Iniciar cámara</button>
+          <button id="captureBtn" class="shutter" type="button" disabled aria-label="Capturar foto"><span></span></button>
+          <button id="flipBtn" class="secondary-btn" type="button">Front / Back</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultSheet" class="sheet hidden" aria-hidden="true">
+      <div class="sheet-card">
+        <div class="sheet-head">
+          <div>
+            <div class="brand">CAPTURA COMPLETADA</div>
+            <div class="sub" id="captureMeta">Foto original</div>
+          </div>
+          <button id="closeResult" class="ghost-btn" type="button">×</button>
+        </div>
+        <img id="capturedImage" alt="Fotografía capturada de la carta" />
+        <div class="capture-stats" id="captureStats"></div>
+        <div class="sheet-actions">
+          <button id="shareBtn" class="primary-btn" type="button">Compartir / Guardar</button>
+          <a id="downloadBtn" class="secondary-btn link-btn" download="LXR-card.jpg">Descargar JPG</a>
+          <button id="retakeBtn" class="secondary-btn" type="button">Tomar otra</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="helpSheet" class="sheet hidden" aria-hidden="true">
+      <div class="sheet-card help-card">
+        <div class="sheet-head"><div class="brand">CÓMO USARLA</div><button id="closeHelp" class="ghost-btn" type="button">×</button></div>
+        <ol>
+          <li>Coloca la carta sin sleeve sobre un fondo mate y contrastante.</li>
+          <li>Usa luz difusa; evita reflejos directos sobre holo y bordes.</li>
+          <li>Mantén el iPhone perpendicular a la carta y llena el marco guía.</li>
+          <li>Cuando QUALITY llegue al umbral y se mantenga estable, Auto Capture puede disparar solo.</li>
+        </ol>
+        <p class="fineprint">Esta v0.1 valida la calidad fotográfica. No asigna un grado PSA y no sustituye inspección física.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+(() => {
+  'use strict';
+
+  const CARD_RATIO = 63 / 88;
+  const ANALYZE_EVERY_MS = 220;
+  const READY_STREAK_REQUIRED = 5;
+  const STRICT_READY_SCORE = 88;
+
+  const video = document.getElementById('video');
+  const analysisCanvas = document.getElementById('analysisCanvas');
+  const captureCanvas = document.getElementById('captureCanvas');
+  const guide = document.getElementById('guide');
+  const startBtn = document.getElementById('startBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const flipBtn = document.getElementById('flipBtn');
+  const autoCapture = document.getElementById('autoCapture');
+  const qualityScore = document.getElementById('qualityScore');
+  const readyBadge = document.getElementById('readyBadge');
+  const cameraMessage = document.getElementById('cameraMessage');
+  const stepLabel = document.getElementById('stepLabel');
+  const resultSheet = document.getElementById('resultSheet');
+  const capturedImage = document.getElementById('capturedImage');
+  const captureStats = document.getElementById('captureStats');
+  const shareBtn = document.getElementById('shareBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const closeResult = document.getElementById('closeResult');
+  const helpSheet = document.getElementById('helpSheet');
+
+  const metricEls = {
+    framing: document.getElementById('mFraming'), ratio: document.getElementById('mRatio'),
+    sharp: document.getElementById('mSharp'), exposure: document.getElementById('mExposure'),
+    glare: document.getElementById('mGlare'), stable: document.getElementById('mStable')
+  };
+
+  let stream = null;
+  let timer = null;
+  let side = 'FRONT';
+  let previousMini = null;
+  let readyStreak = 0;
+  let lastCaptureAt = 0;
+  let latestMetrics = null;
+  let capturedBlob = null;
+  let capturedUrl = null;
+
+  function setMetric(el, text, state='') {
+    el.textContent = text;
+    el.className = state;
+  }
+
+  function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+  function getGuideRectOnVideo() {
+    const vr = video.getBoundingClientRect();
+    const gr = guide.getBoundingClientRect();
+    if (!video.videoWidth || !video.videoHeight) return null;
+
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const viewAspect = vr.width / vr.height;
+    let renderedW, renderedH, cropX = 0, cropY = 0;
+    if (videoAspect > viewAspect) {
+      renderedH = vr.height;
+      renderedW = renderedH * videoAspect;
+      cropX = (renderedW - vr.width) / 2;
+    } else {
+      renderedW = vr.width;
+      renderedH = renderedW / videoAspect;
+      cropY = (renderedH - vr.height) / 2;
+    }
+
+    const x = ((gr.left - vr.left) + cropX) / renderedW * video.videoWidth;
+    const y = ((gr.top - vr.top) + cropY) / renderedH * video.videoHeight;
+    const w = gr.width / renderedW * video.videoWidth;
+    const h = gr.height / renderedH * video.videoHeight;
+    return {x,y,w,h};
+  }
+
+  async function startCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraMessage.textContent = 'Este navegador no permite acceso moderno a cámara.';
+      return;
+    }
+    try {
+      stopCamera();
+      cameraMessage.textContent = 'Solicitando cámara…';
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 3840 },
+          height: { ideal: 2160 }
+        }
+      });
+      video.srcObject = stream;
+      await video.play();
+      startBtn.textContent = 'Reiniciar';
+      cameraMessage.textContent = 'Alinea la carta con el marco';
+      previousMini = null;
+      readyStreak = 0;
+      timer = setInterval(analyzeFrame, ANALYZE_EVERY_MS);
+    } catch (err) {
+      console.error(err);
+      cameraMessage.textContent = err.name === 'NotAllowedError'
+        ? 'Permiso de cámara rechazado. Actívalo en Ajustes de Safari.'
+        : 'No pude abrir la cámara. Usa HTTPS y Safari.';
+    }
+  }
+
+  function stopCamera() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    stream?.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+
+  function analyzeFrame() {
+    if (!stream || video.readyState < 2 || !video.videoWidth) return;
+    const r = getGuideRectOnVideo();
+    if (!r) return;
+
+    const W = 224;
+    const H = Math.round(W / CARD_RATIO);
+    analysisCanvas.width = W;
+    analysisCanvas.height = H;
+    const ctx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+
+    const pad = 0.08;
+    const sx = clamp(r.x - r.w * pad, 0, video.videoWidth - 1);
+    const sy = clamp(r.y - r.h * pad, 0, video.videoHeight - 1);
+    const sw = clamp(r.w * (1 + 2*pad), 1, video.videoWidth - sx);
+    const sh = clamp(r.h * (1 + 2*pad), 1, video.videoHeight - sy);
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, W, H);
+    const img = ctx.getImageData(0,0,W,H);
+    const metrics = computeMetrics(img.data, W, H);
+    latestMetrics = metrics;
+    renderMetrics(metrics);
+  }
+
+  function computeMetrics(data, w, h) {
+    const gray = new Float32Array(w*h);
+    let sum=0, hi=0, lo=0;
+    for (let i=0,p=0;i<data.length;i+=4,p++) {
+      const y = 0.2126*data[i] + 0.7152*data[i+1] + 0.0722*data[i+2];
+      gray[p]=y; sum+=y;
+      if (y>=247) hi++;
+      if (y<=15) lo++;
+    }
+    const mean = sum / gray.length;
+    const glarePct = hi / gray.length * 100;
+    const blackPct = lo / gray.length * 100;
+
+    let lapSum=0, lapSq=0, lapN=0;
+    for (let y=1;y<h-1;y+=2) for (let x=1;x<w-1;x+=2) {
+      const p=y*w+x;
+      const lap = -4*gray[p] + gray[p-1]+gray[p+1]+gray[p-w]+gray[p+w];
+      lapSum+=lap; lapSq+=lap*lap; lapN++;
+    }
+    const lapMean=lapSum/lapN;
+    const sharpVar=Math.max(0,lapSq/lapN-lapMean*lapMean);
+    const sharpScore=clamp((Math.log10(sharpVar+1)-1.55)/1.25*100,0,100);
+
+    const edge = detectGuideEdges(gray,w,h);
+    const expectedRatio = CARD_RATIO;
+    const ratioScore = edge.found ? clamp(100 - Math.abs(edge.ratio-expectedRatio)/expectedRatio*500,0,100) : 35;
+    const framingScore = edge.found ? clamp(100 - edge.fitError*500,0,100) : 30;
+
+    const exposurePenalty = Math.abs(mean-128)*0.75 + Math.max(0,glarePct-1.2)*8 + Math.max(0,blackPct-3)*4;
+    const exposureScore = clamp(100-exposurePenalty,0,100);
+    const glareScore = clamp(100-glarePct*13,0,100);
+
+    const mini = makeMini(gray,w,h,24,34);
+    let motion = 100;
+    if (previousMini) {
+      let diff=0;
+      for (let i=0;i<mini.length;i++) diff += Math.abs(mini[i]-previousMini[i]);
+      const mad = diff/mini.length;
+      motion = clamp(100-mad*8.5,0,100);
+    }
+    previousMini=mini;
+
+    const score = Math.round(
+      framingScore*0.20 + ratioScore*0.10 + sharpScore*0.25 +
+      exposureScore*0.15 + glareScore*0.15 + motion*0.15
+    );
+
+    const gates = {
+      framing: framingScore >= 72,
+      ratio: ratioScore >= 70,
+      sharp: sharpScore >= 65,
+      exposure: exposureScore >= 65,
+      glare: glareScore >= 72,
+      stable: motion >= 78
+    };
+    const ready = score >= STRICT_READY_SCORE && Object.values(gates).every(Boolean);
+
+    let hint='Mantén la carta dentro del marco';
+    if (!gates.framing) hint='Alinea mejor los cuatro bordes con el marco';
+    else if (!gates.ratio) hint='Endereza el teléfono: la carta parece deformada';
+    else if (!gates.sharp) hint='Foto poco nítida: mantén el teléfono fijo o aléjate un poco';
+    else if (!gates.exposure) hint=mean<88?'Falta luz':'Hay demasiada luz';
+    else if (!gates.glare) hint='Mueve la luz o inclínala: hay reflejo fuerte';
+    else if (!gates.stable) hint='Mantén el teléfono quieto';
+    else if (ready) hint='Foto válida para pre-grading';
+
+    return {score,ready,gates,framingScore,ratioScore,sharpScore,exposureScore,glareScore,motion,mean,glarePct,ratio:edge.ratio,hint};
+  }
+
+  function detectGuideEdges(gray,w,h) {
+    // El canvas incluye 8% de margen alrededor del marco; buscamos el salto de contraste
+    // más fuerte cerca de cada borde esperado. Funciona mejor con fondo mate/contrastante.
+    const expected = {left:w*.069, right:w*.931, top:h*.069, bottom:h*.931};
+    const bandX = Math.max(5,Math.round(w*.085));
+    const bandY = Math.max(5,Math.round(h*.085));
+
+    const vEnergy = new Float32Array(w);
+    for (let x=1;x<w-1;x++) {
+      let s=0,n=0;
+      for (let y=Math.round(h*.12);y<Math.round(h*.88);y+=3) {
+        s += Math.abs(gray[y*w+x+1]-gray[y*w+x-1]); n++;
+      }
+      vEnergy[x]=s/n;
+    }
+    const hEnergy = new Float32Array(h);
+    for (let y=1;y<h-1;y++) {
+      let s=0,n=0;
+      for (let x=Math.round(w*.12);x<Math.round(w*.88);x+=3) {
+        s += Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]); n++;
+      }
+      hEnergy[y]=s/n;
+    }
+
+    const peak=(arr,center,band)=>{
+      let bi=-1,bv=-1;
+      const a=Math.max(2,Math.round(center-band)), b=Math.min(arr.length-3,Math.round(center+band));
+      for(let i=a;i<=b;i++){if(arr[i]>bv){bv=arr[i];bi=i;}}
+      return {i:bi,v:bv};
+    };
+    const L=peak(vEnergy,expected.left,bandX), R=peak(vEnergy,expected.right,bandX);
+    const T=peak(hEnergy,expected.top,bandY), B=peak(hEnergy,expected.bottom,bandY);
+    const threshold=6.0;
+    const found=[L,R,T,B].every(p=>p.i>=0 && p.v>=threshold) && R.i>L.i && B.i>T.i;
+    if(!found) return {found:false,ratio:CARD_RATIO,fitError:1};
+    const cw=R.i-L.i, ch=B.i-T.i;
+    const ratio=cw/ch;
+    const err=(Math.abs(L.i-expected.left)/w+Math.abs(R.i-expected.right)/w+Math.abs(T.i-expected.top)/h+Math.abs(B.i-expected.bottom)/h)/4;
+    return {found:true,ratio,fitError:err};
+  }
+
+  function makeMini(gray,w,h,mw,mh){
+    const out=new Float32Array(mw*mh);
+    for(let yy=0;yy<mh;yy++) for(let xx=0;xx<mw;xx++){
+      const x=Math.min(w-1,Math.floor((xx+.5)/mw*w));
+      const y=Math.min(h-1,Math.floor((yy+.5)/mh*h));
+      out[yy*mw+xx]=gray[y*w+x];
+    }
+    return out;
+  }
+
+  function state(score, good=72, warn=50){ return score>=good?'ok':score>=warn?'warn':'bad'; }
+  function label(score){ return score>=80?'OK':score>=60?'JUSTO':'FALLA'; }
+
+  function renderMetrics(m) {
+    qualityScore.textContent = m.score;
+    setMetric(metricEls.framing,label(m.framingScore),state(m.framingScore));
+    setMetric(metricEls.ratio,label(m.ratioScore),state(m.ratioScore));
+    setMetric(metricEls.sharp,Math.round(m.sharpScore),state(m.sharpScore,65,48));
+    setMetric(metricEls.exposure,Math.round(m.exposureScore),state(m.exposureScore,65,48));
+    setMetric(metricEls.glare,m.glarePct.toFixed(1)+'%',m.glareScore>=72?'ok':m.glareScore>=50?'warn':'bad');
+    setMetric(metricEls.stable,Math.round(m.motion),state(m.motion,78,58));
+    cameraMessage.textContent=m.hint;
+
+    if(m.ready){
+      readyStreak++;
+      guide.className='guide state-good';
+      readyBadge.className='badge badge-good'; readyBadge.textContent='READY';
+      captureBtn.disabled=false;
+      if(autoCapture.checked && readyStreak>=READY_STREAK_REQUIRED && Date.now()-lastCaptureAt>3500){
+        capturePhoto(true);
+      }
+    } else {
+      readyStreak=0;
+      captureBtn.disabled=true;
+      if(m.score>=68){guide.className='guide state-warn';readyBadge.className='badge badge-warn';readyBadge.textContent='AJUSTAR';}
+      else {guide.className='guide state-bad';readyBadge.className='badge badge-bad';readyBadge.textContent='NO VÁLIDA';}
+    }
+  }
+
+  async function capturePhoto(auto=false){
+    if(!stream || !video.videoWidth || (!latestMetrics?.ready && !auto)) return;
+    lastCaptureAt=Date.now();
+    readyStreak=0;
+    const w=video.videoWidth,h=video.videoHeight;
+    captureCanvas.width=w; captureCanvas.height=h;
+    const ctx=captureCanvas.getContext('2d');
+    ctx.drawImage(video,0,0,w,h);
+    capturedBlob=await new Promise(res=>captureCanvas.toBlob(res,'image/jpeg',0.96));
+    if(!capturedBlob) return;
+    if(capturedUrl) URL.revokeObjectURL(capturedUrl);
+    capturedUrl=URL.createObjectURL(capturedBlob);
+    capturedImage.src=capturedUrl;
+    downloadBtn.href=capturedUrl;
+    downloadBtn.download=`LXR-${side}-${new Date().toISOString().replace(/[:.]/g,'-')}.jpg`;
+    document.getElementById('captureMeta').textContent=`${side} · ${w}×${h} · JPEG 96%`;
+    const m=latestMetrics;
+    captureStats.innerHTML=`<div>Quality<b>${m.score}/100</b></div><div>Sharpness<b>${Math.round(m.sharpScore)}</b></div><div>Glare<b>${m.glarePct.toFixed(1)}%</b></div>`;
+    resultSheet.classList.remove('hidden'); resultSheet.setAttribute('aria-hidden','false');
+  }
+
+  async function shareCapture(){
+    if(!capturedBlob) return;
+    const file=new File([capturedBlob],`LXR-${side}.jpg`,{type:'image/jpeg'});
+    try{
+      if(navigator.canShare?.({files:[file]})) await navigator.share({files:[file],title:'LXR Card Capture'});
+      else downloadBtn.click();
+    }catch(e){ if(e.name!=='AbortError') console.error(e); }
+  }
+
+  startBtn.addEventListener('click',startCamera);
+  captureBtn.addEventListener('click',()=>capturePhoto(false));
+  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · VALIDATOR v0.1`;});
+  shareBtn.addEventListener('click',shareCapture);
+  retakeBtn.addEventListener('click',()=>resultSheet.classList.add('hidden'));
+  closeResult.addEventListener('click',()=>resultSheet.classList.add('hidden'));
+  document.getElementById('helpBtn').addEventListener('click',()=>helpSheet.classList.remove('hidden'));
+  document.getElementById('closeHelp').addEventListener('click',()=>helpSheet.classList.add('hidden'));
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) readyStreak=0; });
+
+})();
+
+  </script>
+</body>
+</html>
