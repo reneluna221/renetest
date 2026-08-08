@@ -19,10 +19,11 @@ button,a{font:inherit}
 .topbar{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 14px) 18px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,0))}
 .brand{font-size:14px;font-weight:750;letter-spacing:.12em}.sub{margin-top:4px;color:var(--muted);font-size:12px;letter-spacing:.05em}
 .ghost-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);font-size:20px}
-.guide{--guide-color:rgba(255,255,255,.75);position:absolute;z-index:3;left:50%;top:40%;width:min(64vw,310px);aspect-ratio:63/88;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--guide-color) 50%,transparent);border-radius:13px;box-shadow:0 0 0 200vmax rgba(0,0,0,.18);transition:.18s ease}
+.guide{--guide-color:rgba(255,255,255,.65);position:absolute;z-index:3;left:50%;top:40%;width:min(68vw,330px);aspect-ratio:63/88;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--guide-color) 50%,transparent);border-radius:13px;box-shadow:0 0 0 200vmax rgba(0,0,0,.18);transition:.18s ease}
 .guide.state-good{--guide-color:var(--good)}.guide.state-warn{--guide-color:var(--warn)}.guide.state-bad{--guide-color:var(--bad)}
 .corner{position:absolute;width:44px;height:44px;border-color:var(--guide-color);border-style:solid}.tl{left:-3px;top:-3px;border-width:4px 0 0 4px;border-radius:13px 0 0 0}.tr{right:-3px;top:-3px;border-width:4px 4px 0 0;border-radius:0 13px 0 0}.bl{left:-3px;bottom:-3px;border-width:0 0 4px 4px;border-radius:0 0 0 13px}.br{right:-3px;bottom:-3px;border-width:0 4px 4px 0;border-radius:0 0 13px 0}
 .guide-label{position:absolute;left:50%;top:-34px;transform:translateX(-50%);font-size:11px;white-space:nowrap;color:var(--guide-color);font-weight:700;letter-spacing:.1em;text-shadow:0 1px 6px #000}
+.detected-box{position:absolute;z-index:4;display:none;border:2px dashed var(--good);border-radius:10px;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.35)}.detected-box span{position:absolute;right:4px;top:-22px;padding:3px 6px;border-radius:999px;background:rgba(0,0,0,.68);color:var(--good);font-size:9px;font-weight:800;letter-spacing:.08em}
 .camera-message{position:absolute;z-index:4;left:50%;top:calc(40% + min(46vw,215px));transform:translate(-50%,10px);max-width:90vw;padding:7px 11px;border-radius:999px;background:rgba(0,0,0,.62);font-size:12px;text-align:center;backdrop-filter:blur(12px);pointer-events:none}
 .bottom-panel{position:absolute;z-index:6;bottom:0;left:0;right:0;padding:8px 14px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(to top,rgba(3,4,8,.98),rgba(3,4,8,.88),rgba(3,4,8,.18),transparent);padding-top:24px}
 .score-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.15em}.score{font-size:30px;font-weight:750;font-variant-numeric:tabular-nums}.score-den{font-size:15px;color:var(--muted)}
@@ -32,7 +33,7 @@ button,a{font:inherit}
 .primary-btn,.secondary-btn{min-height:44px;border-radius:14px;border:1px solid var(--line);padding:10px 12px;font-weight:700}.primary-btn{background:var(--text);color:#101218;border-color:transparent}.secondary-btn{background:rgba(0,0,0,.35);color:var(--text)}
 .shutter{width:58px;height:58px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,.14);padding:5px}.shutter span{display:block;width:100%;height:100%;border-radius:50%;background:white;transition:.15s}.shutter:disabled{opacity:.35}.shutter:not(:disabled):active span{transform:scale(.88)}
 .sheet{position:fixed;z-index:20;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.65);backdrop-filter:blur(8px)}.hidden{display:none}.sheet-card{width:100%;max-height:92dvh;overflow:auto;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);background:#11141b;border-radius:24px 24px 0 0}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-card img{display:block;width:100%;max-height:56dvh;object-fit:contain;background:#08090c;border-radius:16px;border:1px solid var(--line)}
-.capture-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.capture-stats div{padding:9px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12px}.capture-stats b{display:block;font-size:16px;margin-top:2px}.sheet-actions{display:grid;gap:9px}.link-btn{text-decoration:none;text-align:center}.help-card ol{padding-left:22px;color:#e6e9ef}.help-card li{margin:10px 0}.fineprint{font-size:12px;color:var(--muted)}
+.capture-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.capture-stats div{padding:9px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12px}.capture-stats b{display:block;font-size:16px;margin-top:2px}.view-toggle{display:flex;gap:7px;margin:10px 0}.view-toggle .active{border-color:var(--good);color:var(--good)}.sheet-actions{display:grid;gap:9px}.link-btn{text-decoration:none;text-align:center}.help-card ol{padding-left:22px;color:#e6e9ef}.help-card li{margin:10px 0}.fineprint{font-size:12px;color:var(--muted)}
 @media(min-width:700px){.camera-shell{max-width:520px;margin:0 auto}.sheet-card{max-width:520px;margin:0 auto}}
 
   </style>
@@ -44,12 +45,13 @@ button,a{font:inherit}
       <video id="video" autoplay muted playsinline></video>
       <canvas id="analysisCanvas" aria-hidden="true"></canvas>
       <canvas id="captureCanvas" aria-hidden="true"></canvas>
+      <canvas id="cropCanvas" aria-hidden="true"></canvas>
       <canvas id="ocrCanvas" aria-hidden="true"></canvas>
 
       <div class="topbar">
         <div>
           <div class="brand">LXR CARD CAMERA</div>
-          <div class="sub" id="stepLabel">FRONT · POKÉMON-ONLY v0.4</div>
+          <div class="sub" id="stepLabel">FRONT · POKÉMON-ONLY v0.5</div>
         </div>
         <button id="helpBtn" class="ghost-btn" type="button" aria-label="Ayuda">?</button>
       </div>
@@ -57,8 +59,9 @@ button,a{font:inherit}
       <div id="guide" class="guide state-idle" aria-hidden="true">
         <span class="corner tl"></span><span class="corner tr"></span>
         <span class="corner bl"></span><span class="corner br"></span>
-        <div class="guide-label">ALINEA LA CARTA</div>
+        <div class="guide-label">GUÍA APROX. · CARTA COMPLETA</div>
       </div>
+      <div id="detectedBox" class="detected-box" aria-hidden="true"><span>AUTO</span></div>
 
       <div id="cameraMessage" class="camera-message">Pulsa “Iniciar cámara”</div>
 
@@ -103,10 +106,12 @@ button,a{font:inherit}
           <button id="closeResult" class="ghost-btn" type="button">×</button>
         </div>
         <img id="capturedImage" alt="Fotografía capturada de la carta" />
+        <div class="view-toggle"><button id="viewCropBtn" class="tiny-btn active" type="button">AUTO-CROP</button><button id="viewOriginalBtn" class="tiny-btn" type="button">ORIGINAL</button></div>
         <div class="capture-stats" id="captureStats"></div>
         <div class="sheet-actions">
           <button id="shareBtn" class="primary-btn" type="button">Compartir / Guardar</button>
-          <a id="downloadBtn" class="secondary-btn link-btn" download="LXR-card.jpg">Descargar JPG</a>
+          <a id="downloadBtn" class="secondary-btn link-btn" download="LXR-card-crop.jpg">Descargar AUTO-CROP</a>
+          <a id="originalDownloadBtn" class="secondary-btn link-btn" download="LXR-card-original.jpg">Descargar ORIGINAL</a>
           <button id="retakeBtn" class="secondary-btn" type="button">Tomar otra</button>
         </div>
       </div>
@@ -118,11 +123,11 @@ button,a{font:inherit}
         <ol>
           <li>Coloca la carta sin sleeve sobre un fondo mate y contrastante.</li>
           <li>Usa luz difusa; evita reflejos directos sobre holo y bordes.</li>
-          <li>Mantén el iPhone perpendicular a la carta y alinea sus 4 bordes dentro del marco visible.</li>
+          <li>Mantén el iPhone aproximadamente perpendicular y deja los 4 bordes completos dentro de la zona. No necesitas hacer coincidir la carta exactamente con el marco: es solo una guía.</li>
           <li>“Detalles” abre/cierra las métricas; déjalo cerrado mientras encuadras para no tapar la carta.</li>
-          <li>Cuando QUALITY llegue al umbral y se mantenga estable, Auto Capture puede disparar solo.</li>
+          <li>Cuando QUALITY llegue al umbral y se mantenga estable, Auto Capture puede disparar solo. La app conserva la foto original y además crea un AUTO-CROP para análisis.</li>
         </ol>
-        <p class="fineprint">Esta v0.4 exige detectar una carta física y además evidencia de que corresponde a Pokémon TCG. Compatible con cartas en inglés, japonés y chino usando señales visuales y marcadores universales como HP, numeración y líneas legales. No verifica autenticidad frente a falsificaciones sofisticadas y no asigna un grado PSA.</p>
+        <p class="fineprint">Esta v0.5 exige detectar una carta física y además evidencia de que corresponde a Pokémon TCG. Compatible con cartas en inglés, japonés y chino usando señales visuales y marcadores universales como HP, numeración y líneas legales. No verifica autenticidad frente a falsificaciones sofisticadas y no asigna un grado PSA.</p>
       </div>
     </section>
   </main>
@@ -133,9 +138,10 @@ button,a{font:inherit}
 
   const CARD_RATIO = 63 / 88;
   const ANALYZE_EVERY_MS = 220;
-  const ANALYSIS_PAD = 0.14;
+  const ANALYSIS_PAD = 0.28;
+  const AUTO_CROP_PAD = 0.018;
   const READY_STREAK_REQUIRED = 5;
-  const STRICT_READY_SCORE = 88;
+  const STRICT_READY_SCORE = 84;
   const OCR_INTERVAL_MS = 2400;
   const OCR_MIN_SHARPNESS = 52;
   const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js';
@@ -143,8 +149,10 @@ button,a{font:inherit}
   const video = document.getElementById('video');
   const analysisCanvas = document.getElementById('analysisCanvas');
   const captureCanvas = document.getElementById('captureCanvas');
+  const cropCanvas = document.getElementById('cropCanvas');
   const ocrCanvas = document.getElementById('ocrCanvas');
   const guide = document.getElementById('guide');
+  const detectedBox = document.getElementById('detectedBox');
   const startBtn = document.getElementById('startBtn');
   const captureBtn = document.getElementById('captureBtn');
   const flipBtn = document.getElementById('flipBtn');
@@ -160,6 +168,9 @@ button,a{font:inherit}
   const captureStats = document.getElementById('captureStats');
   const shareBtn = document.getElementById('shareBtn');
   const downloadBtn = document.getElementById('downloadBtn');
+  const originalDownloadBtn = document.getElementById('originalDownloadBtn');
+  const viewCropBtn = document.getElementById('viewCropBtn');
+  const viewOriginalBtn = document.getElementById('viewOriginalBtn');
   const retakeBtn = document.getElementById('retakeBtn');
   const closeResult = document.getElementById('closeResult');
   const helpSheet = document.getElementById('helpSheet');
@@ -179,6 +190,10 @@ button,a{font:inherit}
   let latestMetrics = null;
   let capturedBlob = null;
   let capturedUrl = null;
+  let cropBlob = null;
+  let cropUrl = null;
+  let latestAnalysisMap = null;
+  let currentResultView = 'crop';
   let pokemonOcrScore = 0;
   let pokemonOcrText = '';
   let pokemonOcrStatus = 'WAIT';
@@ -239,7 +254,7 @@ button,a{font:inherit}
       video.srcObject = stream;
       await video.play();
       startBtn.textContent = 'Reiniciar';
-      cameraMessage.textContent = 'Alinea la carta con el marco';
+      cameraMessage.textContent = 'Deja la carta completa visible · el marco es solo una guía';
       previousMini = null;
       readyStreak = 0;
       pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';lastOcrAt=0;
@@ -257,6 +272,7 @@ button,a{font:inherit}
     timer = null;
     stream?.getTracks().forEach(t => t.stop());
     stream = null;
+    detectedBox.style.display='none';
   }
 
   function analyzeFrame() {
@@ -276,10 +292,12 @@ button,a{font:inherit}
     const sw = clamp(r.w * (1 + 2*pad), 1, video.videoWidth - sx);
     const sh = clamp(r.h * (1 + 2*pad), 1, video.videoHeight - sy);
     ctx.drawImage(video, sx, sy, sw, sh, 0, 0, W, H);
+    latestAnalysisMap = {sx,sy,sw,sh,aw:W,ah:H};
     const img = ctx.getImageData(0,0,W,H);
     const metrics = computeMetrics(img.data, W, H);
     latestMetrics = metrics;
     renderMetrics(metrics);
+    updateDetectedBox(metrics.edge, latestAnalysisMap);
     maybeRunPokemonOCR(metrics);
   }
 
@@ -483,8 +501,8 @@ button,a{font:inherit}
     previousMini=mini;
 
     const rawScore = Math.round(
-      cardScore*0.19 + pokemonScore*0.22 + framingScore*0.09 + ratioScore*0.06 + sharpScore*0.16 +
-      exposureScore*0.09 + glareScore*0.08 + motion*0.11
+      cardScore*0.23 + pokemonScore*0.24 + framingScore*0.03 + ratioScore*0.06 + sharpScore*0.17 +
+      exposureScore*0.09 + glareScore*0.08 + motion*0.10
     );
     // Sin carta física o sin evidencia Pokémon, el score queda deliberadamente capado.
     let score = edge.found ? rawScore : Math.min(rawScore, 40);
@@ -493,30 +511,30 @@ button,a{font:inherit}
     const gates = {
       card: edge.found && cardScore >= 58,
       pokemon: pokemonEvidence && pokemonScore >= 52,
-      framing: framingScore >= 70,
+      framing: framingScore >= 30,
       ratio: ratioScore >= 72,
       sharp: sharpScore >= 65,
       exposure: exposureScore >= 65,
       glare: glareScore >= 72,
       stable: motion >= 78
     };
-    const ready = score >= STRICT_READY_SCORE && Object.values(gates).every(Boolean);
+    const ready = score >= STRICT_READY_SCORE && gates.card && gates.pokemon && gates.ratio && gates.sharp && gates.exposure && gates.glare && gates.stable;
 
     let hint='Coloca una carta dentro del marco';
-    if (!gates.card && gates.pokemon) hint='Pokémon confirmado · ahora alinea los 4 bordes con el marco';
-    else if (!gates.card) hint='Buscando bordes de la carta · mantenla dentro del marco';
+    if (!gates.card && gates.pokemon) hint='Pokémon confirmado · deja visibles los 4 bordes completos';
+    else if (!gates.card) hint='Buscando los 4 bordes · no necesitas centrarla exactamente';
     else if (!gates.pokemon) {
       if(pokemonOcrStatus==='LOAD') hint='Cargando verificador Pokémon… la primera vez puede tardar unos segundos';
       else if(pokemonOcrStatus==='SCAN') hint='Verificando que corresponda a Pokémon TCG…';
       else if(pokemonOcrStatus==='ERROR') hint='No pude cargar el verificador Pokémon. Revisa tu conexión.';
       else hint='Pokémon TCG no confirmado: mantén la carta derecha y deja visibles texto y bordes';
     }
-    else if (!gates.framing) hint='Alinea mejor los cuatro bordes con el marco';
     else if (!gates.ratio) hint='Endereza el teléfono: la geometría de la carta no coincide';
     else if (!gates.sharp) hint='Foto poco nítida: mantén el teléfono fijo o aléjate un poco';
     else if (!gates.exposure) hint=mean<88?'Falta luz':'Hay demasiada luz';
     else if (!gates.glare) hint='Mueve la luz o inclínala: hay reflejo fuerte';
     else if (!gates.stable) hint='Mantén el teléfono quieto';
+    else if (ready && !gates.framing) hint='READY · el AUTO-CROP corregirá el encuadre';
     else if (ready) hint='Carta detectada · foto válida para pre-grading';
 
     return {score,ready,gates,cardScore,pokemonScore,pokemonVisualScore:pokemonVisual.score,pokemonOcrScore,pokemonOcrStatus,pokemonOcrSignals,framingScore,ratioScore,sharpScore,exposureScore,glareScore,motion,mean,glarePct,ratio:edge.ratio,hint,edge};
@@ -660,6 +678,68 @@ button,a{font:inherit}
     return out;
   }
 
+  function analysisEdgeToVideoRect(edge,map){
+    if(!edge?.geometryPossible || !map) return null;
+    const L=clamp(edge.L.median,0,map.aw), R=clamp(edge.R.median,0,map.aw);
+    const T=clamp(edge.T.median,0,map.ah), B=clamp(edge.B.median,0,map.ah);
+    if(R-L<map.aw*.35 || B-T<map.ah*.35) return null;
+    return {
+      x: map.sx + (L/map.aw)*map.sw,
+      y: map.sy + (T/map.ah)*map.sh,
+      w: ((R-L)/map.aw)*map.sw,
+      h: ((B-T)/map.ah)*map.sh
+    };
+  }
+
+  function videoRectToViewRect(rect){
+    if(!rect || !video.videoWidth || !video.videoHeight) return null;
+    const vr=video.getBoundingClientRect();
+    const videoAspect=video.videoWidth/video.videoHeight;
+    const viewAspect=vr.width/vr.height;
+    let renderedW,renderedH,cropX=0,cropY=0;
+    if(videoAspect>viewAspect){renderedH=vr.height;renderedW=renderedH*videoAspect;cropX=(renderedW-vr.width)/2;}
+    else{renderedW=vr.width;renderedH=renderedW/videoAspect;cropY=(renderedH-vr.height)/2;}
+    return {
+      left:vr.left + rect.x/video.videoWidth*renderedW - cropX,
+      top:vr.top + rect.y/video.videoHeight*renderedH - cropY,
+      width:rect.w/video.videoWidth*renderedW,
+      height:rect.h/video.videoHeight*renderedH
+    };
+  }
+
+  function updateDetectedBox(edge,map){
+    const videoRect=analysisEdgeToVideoRect(edge,map);
+    if(!videoRect || (edge.cardScore||0)<44){detectedBox.style.display='none';return;}
+    const r=videoRectToViewRect(videoRect);
+    if(!r){detectedBox.style.display='none';return;}
+    detectedBox.style.display='block';
+    detectedBox.style.left=`${r.left}px`;
+    detectedBox.style.top=`${r.top}px`;
+    detectedBox.style.width=`${r.width}px`;
+    detectedBox.style.height=`${r.height}px`;
+  }
+
+  function paddedCropRect(rect,frameW,frameH){
+    if(!rect) return null;
+    let x=rect.x-rect.w*AUTO_CROP_PAD, y=rect.y-rect.h*AUTO_CROP_PAD;
+    let w=rect.w*(1+2*AUTO_CROP_PAD), h=rect.h*(1+2*AUTO_CROP_PAD);
+    // Expandir, nunca recortar la carta, para acercar el resultado a 63:88.
+    const ratio=w/h;
+    if(ratio>CARD_RATIO){const nh=w/CARD_RATIO; y-=(nh-h)/2; h=nh;}
+    else{const nw=h*CARD_RATIO; x-=(nw-w)/2; w=nw;}
+    x=clamp(x,0,frameW-1); y=clamp(y,0,frameH-1);
+    w=clamp(w,1,frameW-x); h=clamp(h,1,frameH-y);
+    return {x,y,w,h};
+  }
+
+  function setResultView(which){
+    currentResultView=which;
+    const useCrop=which==='crop' && cropUrl;
+    capturedImage.src=useCrop?cropUrl:capturedUrl;
+    viewCropBtn.classList.toggle('active',!!useCrop);
+    viewOriginalBtn.classList.toggle('active',!useCrop);
+  }
+
   function state(score, good=72, warn=50){ return score>=good?'ok':score>=warn?'warn':'bad'; }
   function label(score){ return score>=80?'OK':score>=60?'JUSTO':'FALLA'; }
 
@@ -699,22 +779,42 @@ button,a{font:inherit}
     captureCanvas.width=w; captureCanvas.height=h;
     const ctx=captureCanvas.getContext('2d');
     ctx.drawImage(video,0,0,w,h);
-    capturedBlob=await new Promise(res=>captureCanvas.toBlob(res,'image/jpeg',0.96));
+
+    capturedBlob=await new Promise(res=>captureCanvas.toBlob(res,'image/jpeg',0.97));
     if(!capturedBlob) return;
     if(capturedUrl) URL.revokeObjectURL(capturedUrl);
     capturedUrl=URL.createObjectURL(capturedBlob);
-    capturedImage.src=capturedUrl;
-    downloadBtn.href=capturedUrl;
-    downloadBtn.download=`LXR-${side}-${new Date().toISOString().replace(/[:.]/g,'-')}.jpg`;
-    document.getElementById('captureMeta').textContent=`${side} · ${w}×${h} · JPEG 96%`;
+
+    cropBlob=null;
+    if(cropUrl){URL.revokeObjectURL(cropUrl);cropUrl=null;}
+    const detectedRect=analysisEdgeToVideoRect(latestMetrics?.edge,latestAnalysisMap);
+    const cr=paddedCropRect(detectedRect,w,h);
+    if(cr){
+      const outW=Math.min(1800,Math.max(900,Math.round(cr.w)));
+      const outH=Math.round(outW/CARD_RATIO);
+      cropCanvas.width=outW; cropCanvas.height=outH;
+      const cc=cropCanvas.getContext('2d');
+      cc.drawImage(captureCanvas,cr.x,cr.y,cr.w,cr.h,0,0,outW,outH);
+      cropBlob=await new Promise(res=>cropCanvas.toBlob(res,'image/jpeg',0.97));
+      if(cropBlob) cropUrl=URL.createObjectURL(cropBlob);
+    }
+
+    downloadBtn.href=cropUrl||capturedUrl;
+    originalDownloadBtn.href=capturedUrl;
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    downloadBtn.download=`LXR-${side}-ANALYSIS-${stamp}.jpg`;
+    originalDownloadBtn.download=`LXR-${side}-ORIGINAL-${stamp}.jpg`;
+    document.getElementById('captureMeta').textContent=`${side} · Original ${w}×${h}${cropUrl?' · AUTO-CROP listo':''}`;
     const m=latestMetrics;
     captureStats.innerHTML=`<div>Quality<b>${m.score}/100</b></div><div>Pokémon ID<b>${Math.round(m.pokemonScore)}%</b></div><div>Sharpness<b>${Math.round(m.sharpScore)}</b></div><div>Glare<b>${m.glarePct.toFixed(1)}%</b></div>`;
+    setResultView(cropUrl?'crop':'original');
     resultSheet.classList.remove('hidden'); resultSheet.setAttribute('aria-hidden','false');
   }
 
   async function shareCapture(){
     if(!capturedBlob) return;
-    const file=new File([capturedBlob],`LXR-${side}.jpg`,{type:'image/jpeg'});
+    const blob=(currentResultView==='crop'&&cropBlob)?cropBlob:capturedBlob;
+    const file=new File([blob],`LXR-${side}-${currentResultView==='crop'?'ANALYSIS':'ORIGINAL'}.jpg`,{type:'image/jpeg'});
     try{
       if(navigator.canShare?.({files:[file]})) await navigator.share({files:[file],title:'LXR Card Capture'});
       else downloadBtn.click();
@@ -723,8 +823,10 @@ button,a{font:inherit}
 
   startBtn.addEventListener('click',startCamera);
   captureBtn.addEventListener('click',()=>capturePhoto(false));
-  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · POKÉMON-ONLY v0.4`;pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';readyStreak=0;});
+  flipBtn.addEventListener('click',()=>{side=side==='FRONT'?'BACK':'FRONT';stepLabel.textContent=`${side} · POKÉMON-ONLY v0.5`;pokemonOcrScore=0;pokemonOcrText='';pokemonOcrSignals=[];pokemonOcrStatus='WAIT';readyStreak=0;});
   shareBtn.addEventListener('click',shareCapture);
+  viewCropBtn.addEventListener('click',()=>setResultView('crop'));
+  viewOriginalBtn.addEventListener('click',()=>setResultView('original'));
   retakeBtn.addEventListener('click',()=>resultSheet.classList.add('hidden'));
   closeResult.addEventListener('click',()=>resultSheet.classList.add('hidden'));
   document.getElementById('helpBtn').addEventListener('click',()=>helpSheet.classList.remove('hidden'));
