@@ -6,44 +6,56 @@
 <meta name="theme-color" content="#06070a" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>LXR Card Camera v0.7</title>
+<title>LXR Card Camera v0.8</title>
 <style>
-:root{--bg:#06070a;--panel:rgba(10,12,17,.76);--text:#f5f7fb;--muted:#a9b0bc;--line:rgba(255,255,255,.15);--good:#65e68b;--warn:#ffd05a;--bad:#ff6577;--guide:#f3c75d}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overscroll-behavior:none}body{min-height:100dvh}.app{min-height:100dvh;display:flex;flex-direction:column}.top{padding:calc(env(safe-area-inset-top) + 12px) 18px 8px;display:flex;align-items:flex-start;justify-content:space-between;background:#07090d}.brand{letter-spacing:.16em;font-weight:750;font-size:17px}.sub{margin-top:4px;color:#c2c7d0;font-size:12px;letter-spacing:.07em}.help{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:transparent;color:white;font-size:20px}.camera-shell{position:relative;flex:1;min-height:500px;background:#000;overflow:hidden}.video-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}video{width:100%;height:100%;object-fit:contain;background:#000}.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.08),transparent 12%,transparent 82%,rgba(0,0,0,.2))}.guide-wrap{position:absolute;inset:0;pointer-events:none}.guide-outer,.guide-inner{position:absolute;border-radius:18px}.guide-outer{border:2px dashed rgba(243,199,93,.88);box-shadow:0 0 0 9999px rgba(0,0,0,.08)}.guide-inner{border:1px dashed rgba(255,255,255,.48)}.guide-corner{position:absolute;width:40px;height:40px;border-color:var(--guide);border-style:solid}.guide-corner.tl{left:-3px;top:-3px;border-width:5px 0 0 5px;border-radius:18px 0 0 0}.guide-corner.tr{right:-3px;top:-3px;border-width:5px 5px 0 0;border-radius:0 18px 0 0}.guide-corner.bl{left:-3px;bottom:-3px;border-width:0 0 5px 5px;border-radius:0 0 0 18px}.guide-corner.br{right:-3px;bottom:-3px;border-width:0 5px 5px 0;border-radius:0 0 18px 0}.guide-label{position:absolute;left:50%;top:-34px;transform:translateX(-50%);white-space:nowrap;color:var(--guide);font-size:12px;font-weight:700;letter-spacing:.12em;text-shadow:0 2px 8px #000}.hint{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);max-width:88%;padding:9px 14px;border-radius:18px;background:rgba(4,5,8,.72);backdrop-filter:blur(8px);font-size:13px;text-align:center;color:#eef0f4;pointer-events:none}.quality{position:absolute;left:18px;bottom:26px}.quality small{display:block;color:#d3d6dc;font-size:11px;letter-spacing:.14em}.quality b{font-size:44px;line-height:1;font-weight:500}.quality span{font-size:17px;color:#aeb4bf}.status{position:absolute;right:18px;bottom:31px;padding:10px 14px;border-radius:22px;font-size:12px;font-weight:800;letter-spacing:.08em;background:var(--warn);color:#17120a}.status.good{background:var(--good);color:#06130a}.status.bad{background:var(--bad);color:white}.control-panel{background:#080a0f;border-top:1px solid rgba(255,255,255,.07);padding:10px 16px calc(env(safe-area-inset-bottom) + 14px)}.row{display:flex;align-items:center;gap:9px}.row+.row{margin-top:9px}.pill{flex:1;border:1px solid var(--line);background:#10131a;color:#eef0f4;border-radius:13px;padding:10px 12px;font-size:13px}.pill.active{border-color:var(--guide);color:var(--guide)}.capture{width:70px;height:70px;border:5px solid rgba(255,255,255,.46);border-radius:50%;padding:5px;background:transparent;flex:0 0 70px}.capture:after{content:"";display:block;width:100%;height:100%;border-radius:50%;background:#d6d7da}.capture:disabled{opacity:.35}.capture:not(:disabled):active:after{transform:scale(.92)}.secondary{border:1px solid var(--line);background:#10131a;color:#fff;border-radius:14px;padding:13px 16px;font-size:15px;font-weight:650}.secondary.flex{flex:1}.tiny{border:1px solid var(--line);background:#10131a;color:#ddd;border-radius:11px;padding:8px 10px;font-size:12px}.tiny.active{border-color:var(--guide);color:var(--guide)}.auto{display:flex;align-items:center;gap:7px;color:#c9cdd5;font-size:13px;white-space:nowrap}.auto input{width:20px;height:20px}.metrics{display:none;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}.metrics.show{display:grid}.metric{border:1px solid var(--line);background:#0e1117;border-radius:11px;padding:8px}.metric span{display:block;color:#9ea5b1;font-size:10px}.metric b{display:block;margin-top:3px;font-size:14px}.ok{color:var(--good)!important}.warn{color:var(--warn)!important}.bad{color:var(--bad)!important}.zoomrow{display:none;gap:6px}.zoomrow.show{display:flex}.sheet{position:fixed;z-index:30;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(10px);display:flex;align-items:flex-end}.sheet.hidden{display:none}.sheet-card{width:100%;max-height:92dvh;overflow:auto;background:#11141b;border-radius:24px 24px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px)}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.sheet h2{margin:0;font-size:18px}.sheet img{display:block;width:100%;max-height:56dvh;object-fit:contain;background:#06070a;border-radius:14px;border:1px solid var(--line)}.tabs{display:flex;gap:7px;margin:10px 0}.tabs button{flex:1}.actions{display:grid;gap:8px;margin-top:10px}.actions a{text-decoration:none;text-align:center}.note{font-size:12px;color:var(--muted);line-height:1.45}.start{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#171b25,#07080b 68%);padding:28px}.start-card{max-width:350px;text-align:center}.start-card h1{font-size:23px}.start-card p{color:#c0c5ce;font-size:14px;line-height:1.45}.primary{border:0;border-radius:15px;background:white;color:#08090c;font-size:16px;font-weight:750;padding:14px 20px;width:100%}.hidden{display:none!important}canvas{display:none}@media(min-width:700px){.app{max-width:520px;margin:auto}.sheet-card{max-width:520px;margin:auto}}
+:root{--bg:#06070a;--panel:#080a0f;--text:#f5f7fb;--muted:#a9b0bc;--line:rgba(255,255,255,.15);--good:#65e68b;--warn:#ffd05a;--bad:#ff6577;--guide:#f3c75d;--blue:#72b7ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overscroll-behavior:none}body{min-height:100dvh}.app{min-height:100dvh;display:flex;flex-direction:column}.top{padding:calc(env(safe-area-inset-top) + 10px) 16px 7px;background:#07090d;border-bottom:1px solid rgba(255,255,255,.06)}.topline{display:flex;align-items:flex-start;justify-content:space-between}.brand{letter-spacing:.15em;font-weight:760;font-size:16px}.sub{margin-top:3px;color:#c2c7d0;font-size:11px;letter-spacing:.07em}.help{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:transparent;color:white;font-size:19px}.progress-head{margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}.step-title{font-size:13px;font-weight:750}.step-count{font-size:12px;color:var(--muted)}.progress-track{height:5px;background:#1a1e27;border-radius:99px;overflow:hidden;margin-top:6px}.progress-fill{height:100%;width:0;background:var(--guide);transition:width .2s ease}.profiles{display:flex;gap:5px;margin-top:7px;overflow:auto;scrollbar-width:none;padding-bottom:1px}.profiles::-webkit-scrollbar{display:none}.profile-dot{flex:0 0 auto;min-width:30px;height:27px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:#10131a;color:#8f97a4;font-size:10px;font-weight:750}.profile-dot.done{border-color:rgba(101,230,139,.5);color:var(--good);background:rgba(101,230,139,.08)}.profile-dot.current{border-color:var(--guide);color:var(--guide)}.camera-shell{position:relative;flex:1;min-height:420px;background:#000;overflow:hidden}.video-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000}video{width:100%;height:100%;object-fit:contain;background:#000}.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.05),transparent 14%,transparent 80%,rgba(0,0,0,.23))}.guide-wrap{position:absolute;inset:0;pointer-events:none}.guide-outer,.guide-inner{position:absolute;border-radius:18px;transition:transform .25s ease,border-color .25s ease}.guide-outer{border:2px dashed rgba(243,199,93,.88);box-shadow:0 0 0 9999px rgba(0,0,0,.065);transform-origin:center}.guide-inner{border:1px dashed rgba(255,255,255,.42);transform-origin:center}.guide-corner{position:absolute;width:38px;height:38px;border-color:var(--guide);border-style:solid}.guide-corner.tl{left:-3px;top:-3px;border-width:5px 0 0 5px;border-radius:18px 0 0 0}.guide-corner.tr{right:-3px;top:-3px;border-width:5px 5px 0 0;border-radius:0 18px 0 0}.guide-corner.bl{left:-3px;bottom:-3px;border-width:0 0 5px 5px;border-radius:0 0 0 18px}.guide-corner.br{right:-3px;bottom:-3px;border-width:0 5px 5px 0;border-radius:0 0 18px 0}.guide-label{position:absolute;left:50%;top:-32px;transform:translateX(-50%);white-space:nowrap;color:var(--guide);font-size:11px;font-weight:750;letter-spacing:.1em;text-shadow:0 2px 8px #000}.direction{position:absolute;top:15px;left:50%;transform:translateX(-50%);z-index:4;padding:7px 12px;border-radius:14px;background:rgba(5,7,10,.74);backdrop-filter:blur(7px);font-size:12px;max-width:88%;text-align:center;white-space:nowrap}.angle-badge{position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:4;padding:5px 9px;border-radius:12px;background:rgba(5,7,10,.68);font-size:11px;color:#d6d9df}.hint{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);max-width:90%;padding:8px 13px;border-radius:17px;background:rgba(4,5,8,.72);backdrop-filter:blur(8px);font-size:12px;text-align:center;color:#eef0f4;pointer-events:none}.quality{position:absolute;left:16px;bottom:18px}.quality small{display:block;color:#d3d6dc;font-size:10px;letter-spacing:.13em}.quality b{font-size:39px;line-height:1;font-weight:500}.quality span{font-size:15px;color:#aeb4bf}.status{position:absolute;right:16px;bottom:23px;padding:9px 13px;border-radius:21px;font-size:11px;font-weight:850;letter-spacing:.08em;background:var(--warn);color:#17120a}.status.good{background:var(--good);color:#06130a}.status.bad{background:var(--bad);color:white}.control-panel{background:#080a0f;border-top:1px solid rgba(255,255,255,.07);padding:9px 14px calc(env(safe-area-inset-bottom) + 12px)}.row{display:flex;align-items:center;gap:8px}.row+.row{margin-top:8px}.capture{width:68px;height:68px;border:5px solid rgba(255,255,255,.46);border-radius:50%;padding:5px;background:transparent;flex:0 0 68px}.capture:after{content:"";display:block;width:100%;height:100%;border-radius:50%;background:#d6d7da}.capture:disabled{opacity:.3}.capture:not(:disabled):active:after{transform:scale(.92)}.secondary{border:1px solid var(--line);background:#10131a;color:#fff;border-radius:13px;padding:12px 13px;font-size:14px;font-weight:650}.secondary.flex{flex:1}.pill{flex:1;border:1px solid var(--line);background:#10131a;color:#eef0f4;border-radius:12px;padding:9px 10px;font-size:12px}.pill.active{border-color:var(--guide);color:var(--guide)}.tiny{border:1px solid var(--line);background:#10131a;color:#ddd;border-radius:10px;padding:8px 9px;font-size:11px}.tiny.active{border-color:var(--guide);color:var(--guide)}.auto{display:flex;align-items:center;gap:6px;color:#c9cdd5;font-size:12px;white-space:nowrap}.auto input{width:19px;height:19px}.metrics{display:none;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}.metrics.show{display:grid}.metric{border:1px solid var(--line);background:#0e1117;border-radius:10px;padding:7px}.metric span{display:block;color:#9ea5b1;font-size:9px}.metric b{display:block;margin-top:3px;font-size:12px}.ok{color:var(--good)!important}.warn{color:var(--warn)!important}.bad{color:var(--bad)!important}.zoomrow{display:none;gap:6px;margin-top:7px}.zoomrow.show{display:flex}.sheet{position:fixed;z-index:30;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);display:flex;align-items:flex-end}.sheet.hidden{display:none}.sheet-card{width:100%;max-height:94dvh;overflow:auto;background:#11141b;border-radius:24px 24px 0 0;padding:17px 15px calc(env(safe-area-inset-bottom) + 17px)}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.sheet h2{margin:0;font-size:18px}.sheet img.preview{display:block;width:100%;max-height:52dvh;object-fit:contain;background:#06070a;border-radius:13px;border:1px solid var(--line)}.tabs{display:flex;gap:7px;margin:9px 0}.tabs button{flex:1}.actions{display:grid;gap:8px;margin-top:10px}.actions a{text-decoration:none;text-align:center}.primary{border:0;border-radius:14px;background:white;color:#08090c;font-size:15px;font-weight:780;padding:13px 18px;width:100%}.primary.goodbtn{background:var(--good);color:#06130a}.note{font-size:12px;color:var(--muted);line-height:1.45}.start{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#171b25,#07080b 68%);padding:27px}.start-card{max-width:360px;text-align:center}.start-card h1{font-size:22px}.start-card p{color:#c0c5ce;font-size:13px;line-height:1.48}.start-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gallery{display:grid;gap:8px}.shot-card{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:13px;padding:8px;background:#0d1016}.shot-card img{width:72px;height:96px;object-fit:cover;border-radius:8px;background:#050608}.shot-card h3{margin:0 0 3px;font-size:13px}.shot-card p{margin:0;color:var(--muted);font-size:10px;line-height:1.35}.shot-card .check{color:var(--good);font-size:20px}.empty{text-align:center;color:var(--muted);padding:24px 10px}.hidden{display:none!important}canvas{display:none}@media(min-width:700px){.app{max-width:520px;margin:auto}.sheet-card{max-width:520px;margin:auto}.camera-shell{min-height:520px}}
 </style>
 </head>
 <body>
 <div class="app">
   <header class="top">
-    <div><div class="brand">LXR CARD CAMERA</div><div class="sub">POKÉMON TCG · GUIDED CAPTURE v0.7</div></div>
-    <button id="helpBtn" class="help" type="button">?</button>
+    <div class="topline">
+      <div><div class="brand">LXR CARD CAMERA</div><div class="sub">6-SHOT PRE-GRADE SESSION · v0.8</div></div>
+      <button id="helpBtn" class="help" type="button">?</button>
+    </div>
+    <div class="progress-head"><div id="stepTitle" class="step-title">Front · Flat</div><div id="stepCount" class="step-count">0/6 guardadas</div></div>
+    <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+    <div id="profiles" class="profiles"></div>
   </header>
+
   <main class="camera-shell" id="cameraShell">
     <div class="video-wrap"><video id="video" autoplay playsinline muted></video></div>
     <div class="shade"></div>
     <div class="guide-wrap">
       <div id="guideOuter" class="guide-outer">
         <div class="guide-corner tl"></div><div class="guide-corner tr"></div><div class="guide-corner bl"></div><div class="guide-corner br"></div>
-        <div id="guideLabel" class="guide-label">DEJA LOS 4 BORDES DENTRO DE LA BANDA</div>
+        <div id="guideLabel" class="guide-label">DEJA LOS 4 BORDES DENTRO</div>
       </div>
       <div id="guideInner" class="guide-inner"></div>
     </div>
-    <div id="hint" class="hint">Mantén el teléfono a unos 25–35 cm. No necesitas clavar el borde exacto.</div>
+    <div id="direction" class="direction">Foto frontal perpendicular</div>
+    <div id="angleBadge" class="angle-badge">Ángulo: guía visual</div>
+    <div id="hint" class="hint">Mantén la carta completa y el teléfono quieto.</div>
     <div class="quality"><small>QUALITY</small><b id="quality">—</b><span>/100</span></div>
     <div id="status" class="status">INICIAR</div>
+
     <div id="startScreen" class="start">
       <div class="start-card">
-        <h1>Captura para pre-grading</h1>
-        <p>Esta versión no intenta adivinar el borde físico en vivo. La banda amarilla es una zona de tolerancia: deja la carta completa dentro y la app valida enfoque, luz, reflejos y estabilidad.</p>
-        <button id="startBtn" class="primary" type="button">Iniciar cámara</button>
+        <h1>Sesión de pre-grading</h1>
+        <p>La app te guiará por 6 fotos: frente y reverso planos, inclinaciones izquierda/derecha y dos tomas de superficie. Cada toma se valida y se guarda localmente en este iPhone.</p>
+        <button id="startBtn" class="primary" type="button">Iniciar / continuar sesión</button>
+        <div class="start-options"><button id="newSessionBtn" class="secondary" type="button">Nueva sesión</button><button id="galleryStartBtn" class="secondary" type="button">Ver guardadas</button></div>
+        <p class="note">Las imágenes quedan en IndexedDB del navegador hasta que borres datos del sitio o elimines la sesión.</p>
       </div>
     </div>
   </main>
+
   <section class="control-panel">
     <div class="row">
-      <button id="restartBtn" class="secondary flex" type="button">Reiniciar</button>
+      <button id="galleryBtn" class="secondary flex" type="button">Sesión</button>
       <button id="captureBtn" class="capture" type="button" disabled aria-label="Tomar foto"></button>
-      <button id="sideBtn" class="secondary flex" type="button">FRONT</button>
+      <button id="skipBtn" class="secondary flex" type="button">Cambiar perfil</button>
     </div>
     <div class="row">
       <button id="protectionBtn" class="pill" type="button">Raw card</button>
@@ -54,32 +66,46 @@
     <div id="metrics" class="metrics">
       <div class="metric"><span>Enfoque</span><b id="mSharp">—</b></div>
       <div class="metric"><span>Exposición</span><b id="mExposure">—</b></div>
-      <div class="metric"><span>Glare</span><b id="mGlare">—</b></div>
+      <div class="metric"><span>Highlight</span><b id="mGlare">—</b></div>
       <div class="metric"><span>Estabilidad</span><b id="mStable">—</b></div>
+      <div class="metric"><span>Ángulo</span><b id="mAngle">—</b></div>
     </div>
   </section>
 </div>
 
 <div id="resultSheet" class="sheet hidden">
   <div class="sheet-card">
-    <div class="sheet-head"><h2>Captura lista</h2><button id="closeResult" class="tiny" type="button">Cerrar</button></div>
-    <img id="resultImage" alt="Captura de carta Pokémon TCG">
+    <div class="sheet-head"><h2 id="resultTitle">Revisar captura</h2><button id="closeResult" class="tiny" type="button">Cerrar</button></div>
+    <img id="resultImage" class="preview" alt="Captura de carta Pokémon TCG">
     <div class="tabs"><button id="cropTab" class="tiny active" type="button">GUIDE-CROP</button><button id="originalTab" class="tiny" type="button">ORIGINAL</button></div>
     <p id="captureInfo" class="note"></p>
     <div class="actions">
-      <button id="shareBtn" class="secondary" type="button">Compartir / Guardar</button>
-      <a id="downloadCrop" class="secondary" download="LXR-guide-crop.jpg">Descargar GUIDE-CROP</a>
-      <a id="downloadOriginal" class="secondary" download="LXR-original.jpg">Descargar ORIGINAL</a>
-      <button id="retakeBtn" class="primary" type="button">Tomar otra</button>
+      <button id="saveNextBtn" class="primary goodbtn" type="button">Guardar y siguiente</button>
+      <button id="retakeBtn" class="secondary" type="button">Repetir esta toma</button>
+      <button id="sharePreviewBtn" class="secondary" type="button">Compartir esta foto</button>
+    </div>
+  </div>
+</div>
+
+<div id="gallerySheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2>Sesión guardada</h2><button id="closeGallery" class="tiny" type="button">Cerrar</button></div>
+    <p id="gallerySummary" class="note"></p>
+    <div id="galleryList" class="gallery"></div>
+    <div class="actions">
+      <button id="shareSessionBtn" class="primary" type="button">Compartir originales guardados</button>
+      <button id="newFromGalleryBtn" class="secondary" type="button">Nueva sesión</button>
+      <button id="deleteSessionBtn" class="secondary" type="button">Borrar sesión actual</button>
     </div>
   </div>
 </div>
 
 <div id="helpSheet" class="sheet hidden">
   <div class="sheet-card">
-    <div class="sheet-head"><h2>Cómo usar v0.7</h2><button id="closeHelp" class="tiny" type="button">Cerrar</button></div>
-    <p class="note">1) Pon la carta sobre fondo liso. 2) Mantén el iPhone a ~25–35 cm para evitar macro/distorsión. 3) El borde físico de la carta debe quedar entre el rectángulo interior y el exterior: no tiene que coincidir pixel por pixel. 4) Evita reflejos sobre esquinas y bordes. 5) ORIGINAL se conserva sin modificar; GUIDE-CROP solo sirve para facilitar el análisis.</p>
-    <p class="note">Para pre-grading serio recomendamos <b>Raw card</b>. Sleeve puede funcionar. Top loader añade reflejos y puede ocultar defectos de superficie.</p>
+    <div class="sheet-head"><h2>Protocolo v0.8</h2><button id="closeHelp" class="tiny" type="button">Cerrar</button></div>
+    <p class="note"><b>1. Front Flat:</b> frente perpendicular, poco reflejo. <b>2. Back Flat:</b> reverso perpendicular. <b>3. Front Tilt Left:</b> inclina el teléfono unos 12–25° a la izquierda. <b>4. Front Tilt Right:</b> lo mismo a la derecha. <b>5. Front Surface:</b> inclina hasta que una franja de luz recorra la superficie sin quemarla. <b>6. Back Surface:</b> repite en reverso.</p>
+    <p class="note">Si Safari permite sensor de orientación, la primera foto plana calibra el ángulo y las tomas inclinadas se validan respecto a esa referencia. Si no, la app usa guía visual y calidad de imagen.</p>
+    <p class="note">Para grading serio, <b>Raw card</b> es el modo recomendado. Sleeve puede servir; top loader limita la evaluación de superficie.</p>
   </div>
 </div>
 
@@ -87,9 +113,19 @@
 <script>
 (() => {
 'use strict';
+
 const CARD_RATIO=63/88;
-const READY_SCORE=78;
-const MANUAL_SCORE=52;
+const DB_NAME='LXRCardCameraDB';
+const DB_VERSION=1;
+const PROFILES=[
+  {id:'front_flat', short:'FF', title:'Front · Flat', side:'FRONT', kind:'flat', instruction:'Frente perpendicular · sin reflejo fuerte', guide:'flat'},
+  {id:'back_flat', short:'BF', title:'Back · Flat', side:'BACK', kind:'flat', instruction:'Reverso perpendicular · 4 bordes visibles', guide:'flat'},
+  {id:'front_tilt_left', short:'FL', title:'Front · Tilt Left', side:'FRONT', kind:'tiltLeft', instruction:'Inclina 12–25° hacia la izquierda', guide:'left'},
+  {id:'front_tilt_right', short:'FR', title:'Front · Tilt Right', side:'FRONT', kind:'tiltRight', instruction:'Inclina 12–25° hacia la derecha', guide:'right'},
+  {id:'front_surface', short:'FS', title:'Front · Surface', side:'FRONT', kind:'surface', instruction:'Haz que una franja de luz barra el frente', guide:'surface'},
+  {id:'back_surface', short:'BS', title:'Back · Surface', side:'BACK', kind:'surface', instruction:'Franja de luz sobre el reverso · sin quemar', guide:'surface'}
+];
+
 const video=document.getElementById('video');
 const shell=document.getElementById('cameraShell');
 const outer=document.getElementById('guideOuter');
@@ -97,6 +133,8 @@ const inner=document.getElementById('guideInner');
 const qualityEl=document.getElementById('quality');
 const statusEl=document.getElementById('status');
 const hintEl=document.getElementById('hint');
+const directionEl=document.getElementById('direction');
+const angleBadge=document.getElementById('angleBadge');
 const captureBtn=document.getElementById('captureBtn');
 const autoEl=document.getElementById('autoCapture');
 const analysisCanvas=document.getElementById('analysisCanvas');
@@ -105,25 +143,93 @@ const cropCanvas=document.getElementById('cropCanvas');
 const aCtx=analysisCanvas.getContext('2d',{willReadFrequently:true});
 const capCtx=captureCanvas.getContext('2d');
 const cropCtx=cropCanvas.getContext('2d');
+
 let stream=null,track=null,raf=0,lastMini=null,stableFrames=0,lastShot=0;
-let side='FRONT',protection='RAW';
-let latest={score:0,sharp:0,exposure:0,glare:100,stable:0,ready:false,manual:false};
-let originalUrl='',cropUrl='',currentView='crop';
+let protection='RAW',protIdx=0;
+let currentIndex=0,currentSession=null,savedShots=new Map();
+let latest={score:0,sharp:0,exposure:0,glareScore:0,glarePct:0,stable:0,ready:false,manual:false,angleOK:true,angleText:'—'};
+let originalBlob=null,cropBlob=null,originalUrl='',cropUrl='',currentView='crop',pendingMetrics=null;
 let guideNorm={x:.15,y:.1,w:.7,h:.8};
+let orientation={available:false,permission:'unknown',beta:null,gamma:null};
+let dbPromise=null;
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function cssState(v,good=70,warn=48){return v>=good?'ok':v>=warn?'warn':'bad'}
 function setMetric(id,text,state){const e=document.getElementById(id);e.textContent=text;e.className=state||''}
+function profile(){return PROFILES[currentIndex]}
+function nowId(){return 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
+function revoke(u){if(u)try{URL.revokeObjectURL(u)}catch(e){}}
+function canvasBlob(c,q=.96){return new Promise(r=>c.toBlob(r,'image/jpeg',q))}
+function angleDiff(a,b){if(a==null||b==null)return null;let d=a-b;while(d>180)d-=360;while(d<-180)d+=360;return d}
+
+function openDB(){
+  if(dbPromise)return dbPromise;
+  dbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains('sessions'))db.createObjectStore('sessions',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('shots')){
+        const s=db.createObjectStore('shots',{keyPath:'key'});
+        s.createIndex('sessionId','sessionId',{unique:false});
+      }
+    };
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
+  return dbPromise;
+}
+async function dbPut(store,value){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function dbGet(store,key){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly');const r=tx.objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbDelete(store,key){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function getAllSessions(){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction('sessions','readonly');const r=tx.objectStore('sessions').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+async function getSessionShots(sessionId){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction('shots','readonly');const idx=tx.objectStore('shots').index('sessionId');const r=idx.getAll(sessionId);r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+async function clearSessionShots(sessionId){const shots=await getSessionShots(sessionId);for(const s of shots)await dbDelete('shots',s.key)}
+
+async function loadOrCreateSession(forceNew=false){
+  if(forceNew){await createNewSession();return}
+  const sessions=(await getAllSessions()).sort((a,b)=>b.createdAt-a.createdAt);
+  currentSession=sessions.find(s=>!s.completedAt)||sessions[0]||null;
+  if(!currentSession){await createNewSession();return}
+  protection=currentSession.protection||'RAW';protIdx=['RAW','SLEEVE','TOPLOADER'].indexOf(protection);if(protIdx<0)protIdx=0;
+  const shots=await getSessionShots(currentSession.id);savedShots=new Map(shots.map(s=>[s.profileId,s]));
+  currentIndex=Math.min(PROFILES.length-1,Math.max(0,currentSession.currentIndex||0));
+  if(savedShots.size===PROFILES.length)currentIndex=PROFILES.length-1;
+  updateUI();
+}
+async function createNewSession(){
+  currentSession={id:nowId(),createdAt:Date.now(),completedAt:null,currentIndex:0,protection:'RAW',baseline:null};
+  savedShots=new Map();currentIndex=0;protection='RAW';protIdx=0;
+  await dbPut('sessions',currentSession);updateUI();
+}
+
+function renderProfiles(){
+  const box=document.getElementById('profiles');box.innerHTML='';
+  PROFILES.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.className='profile-dot';b.textContent=p.short;b.title=p.title;if(savedShots.has(p.id))b.classList.add('done');if(i===currentIndex)b.classList.add('current');b.addEventListener('click',()=>{currentIndex=i;currentSession.currentIndex=i;dbPut('sessions',currentSession);lastMini=null;stableFrames=0;updateUI()});box.appendChild(b)});
+}
+function updateUI(){
+  const p=profile();
+  document.getElementById('stepTitle').textContent=p.title;
+  document.getElementById('stepCount').textContent=`${savedShots.size}/6 guardadas`;
+  document.getElementById('progressFill').style.width=(savedShots.size/PROFILES.length*100)+'%';
+  directionEl.textContent=p.instruction;
+  renderProfiles();applyProfileGuide();layoutGuide();
+  document.getElementById('protectionBtn').textContent=protection==='RAW'?'Raw card':protection==='SLEEVE'?'Sleeve':'Top loader';
+}
+
+function applyProfileGuide(){
+  const p=profile();let transform='none';
+  if(p.guide==='left')transform='perspective(700px) rotateY(-10deg)';
+  if(p.guide==='right')transform='perspective(700px) rotateY(10deg)';
+  if(p.guide==='surface')transform='perspective(700px) rotateX(8deg)';
+  outer.style.transform=transform;inner.style.transform=transform;
+  document.getElementById('guideLabel').textContent=p.kind==='surface'?'LUZ EN FRANJA · SIN QUEMAR':'DEJA LOS 4 BORDES DENTRO';
+}
 
 function layoutGuide(){
-  const W=shell.clientWidth,H=shell.clientHeight;
-  if(!W||!H)return;
-  const topReserve=48,bottomReserve=112;
-  const availH=Math.max(260,H-topReserve-bottomReserve);
-  let h=Math.min(availH*.84,H*.68), w=h*CARD_RATIO;
-  if(w>W*.76){w=W*.76;h=w/CARD_RATIO}
-  if(protection==='TOPLOADER'){w*=1.075;h*=1.025}
-  if(protection==='SLEEVE'){w*=1.025;h*=1.012}
+  const W=shell.clientWidth,H=shell.clientHeight;if(!W||!H)return;
+  const topReserve=62,bottomReserve=100,availH=Math.max(240,H-topReserve-bottomReserve);
+  let h=Math.min(availH*.82,H*.67),w=h*CARD_RATIO;if(w>W*.77){w=W*.77;h=w/CARD_RATIO}
+  if(protection==='TOPLOADER'){w*=1.075;h*=1.025}if(protection==='SLEEVE'){w*=1.025;h*=1.012}
   const x=(W-w)/2,y=topReserve+(availH-h)/2;
   Object.assign(outer.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
   const inset=protection==='TOPLOADER'?.08:.065;
@@ -132,115 +238,174 @@ function layoutGuide(){
 }
 window.addEventListener('resize',layoutGuide);
 
+async function requestOrientationPermission(){
+  try{
+    if(typeof DeviceOrientationEvent==='undefined'){orientation.permission='unsupported';return}
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      const p=await DeviceOrientationEvent.requestPermission();orientation.permission=p;if(p!=='granted')return;
+    }else orientation.permission='granted';
+    window.addEventListener('deviceorientation',e=>{orientation.available=true;orientation.beta=e.beta;orientation.gamma=e.gamma},{passive:true});
+  }catch(e){orientation.permission='denied'}
+}
+
 async function startCamera(){
   try{
+    await loadOrCreateSession(false);
+    await requestOrientationPermission();
     if(stream)stream.getTracks().forEach(t=>t.stop());
     const constraints={audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440},aspectRatio:{ideal:4/3},frameRate:{ideal:30,max:30}}};
-    stream=await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject=stream; await video.play();
-    track=stream.getVideoTracks()[0];
-    try{
-      const caps=track.getCapabilities?.()||{};
-      const adv={};
-      if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';
-      if(caps.zoom&&typeof caps.zoom.min==='number')adv.zoom=clamp(1,caps.zoom.min,caps.zoom.max);
-      if(Object.keys(adv).length)await track.applyConstraints({advanced:[adv]});
-      buildZoomControls(caps);
-    }catch(e){console.log('camera capability note',e)}
-    document.getElementById('startScreen').classList.add('hidden');
-    layoutGuide();
-    cancelAnimationFrame(raf);loop();
-  }catch(err){
-    console.error(err);statusEl.textContent='SIN CÁMARA';statusEl.className='status bad';hintEl.textContent='Safari necesita permiso de cámara y una página HTTPS.';
-  }
+    stream=await navigator.mediaDevices.getUserMedia(constraints);video.srcObject=stream;await video.play();track=stream.getVideoTracks()[0];
+    try{const caps=track.getCapabilities?.()||{},adv={};if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';if(caps.zoom&&typeof caps.zoom.min==='number')adv.zoom=clamp(1,caps.zoom.min,caps.zoom.max);if(Object.keys(adv).length)await track.applyConstraints({advanced:[adv]});buildZoomControls(caps)}catch(e){}
+    document.getElementById('startScreen').classList.add('hidden');layoutGuide();cancelAnimationFrame(raf);loop();
+  }catch(err){console.error(err);statusEl.textContent='SIN CÁMARA';statusEl.className='status bad';hintEl.textContent='Safari necesita permiso de cámara y HTTPS.'}
 }
 function buildZoomControls(caps){
-  const row=document.getElementById('zoomRow');row.innerHTML='';row.classList.remove('show');
-  if(!caps.zoom||typeof caps.zoom.min!=='number')return;
-  const candidates=[1,1.5,2].filter(z=>z>=caps.zoom.min&&z<=caps.zoom.max);
-  if(candidates.length<2)return;
+  const row=document.getElementById('zoomRow');row.innerHTML='';row.classList.remove('show');if(!caps.zoom||typeof caps.zoom.min!=='number')return;
+  const candidates=[1,1.5,2].filter(z=>z>=caps.zoom.min&&z<=caps.zoom.max);if(candidates.length<2)return;
   candidates.forEach((z,i)=>{const b=document.createElement('button');b.type='button';b.className='tiny'+(i===0?' active':'');b.textContent=z+'×';b.addEventListener('click',async()=>{try{await track.applyConstraints({advanced:[{zoom:z}]});row.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}catch(e){}});row.appendChild(b)});row.classList.add('show');
 }
 function loop(){analyze();raf=requestAnimationFrame(loop)}
 function displayToVideoRect(){
-  const vw=video.videoWidth,vh=video.videoHeight,W=shell.clientWidth,H=shell.clientHeight;
-  if(!vw||!vh||!W||!H)return null;
-  // object-fit: contain mapping
+  const vw=video.videoWidth,vh=video.videoHeight,W=shell.clientWidth,H=shell.clientHeight;if(!vw||!vh||!W||!H)return null;
   const scale=Math.min(W/vw,H/vh),dw=vw*scale,dh=vh*scale,ox=(W-dw)/2,oy=(H-dh)/2;
   const gx=guideNorm.x*W,gy=guideNorm.y*H,gw=guideNorm.w*W,gh=guideNorm.h*H;
-  const x=clamp((gx-ox)/scale,0,vw),y=clamp((gy-oy)/scale,0,vh);
-  const r=clamp((gx+gw-ox)/scale,0,vw),b=clamp((gy+gh-oy)/scale,0,vh);
+  const x=clamp((gx-ox)/scale,0,vw),y=clamp((gy-oy)/scale,0,vh),r=clamp((gx+gw-ox)/scale,0,vw),b=clamp((gy+gh-oy)/scale,0,vh);
   return {x,y,w:Math.max(1,r-x),h:Math.max(1,b-y),vw,vh};
 }
-function analyze(){
-  if(video.readyState<2||!video.videoWidth)return;
-  const vr=displayToVideoRect();if(!vr)return;
-  const aw=240,ah=Math.max(180,Math.round(aw*(vr.h/vr.w)));
-  analysisCanvas.width=aw;analysisCanvas.height=ah;
-  aCtx.drawImage(video,vr.x,vr.y,vr.w,vr.h,0,0,aw,ah);
-  const img=aCtx.getImageData(0,0,aw,ah),d=img.data;
-  let sum=0,glare=0,dark=0;const gray=new Float32Array(aw*ah);
-  for(let i=0,p=0;i<d.length;i+=4,p++){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];gray[p]=y;sum+=y;if(y>247)glare++;if(y<12)dark++}
-  const mean=sum/gray.length,glarePct=100*glare/gray.length,darkPct=100*dark/gray.length;
-  let lapSum=0,lapSq=0,n=0;
-  for(let y=1;y<ah-1;y+=2)for(let x=1;x<aw-1;x+=2){const i=y*aw+x;const lap=4*gray[i]-gray[i-1]-gray[i+1]-gray[i-aw]-gray[i+aw];lapSum+=lap;lapSq+=lap*lap;n++}
-  const variance=Math.max(0,lapSq/n-(lapSum/n)**2);
-  const sharp=clamp((Math.sqrt(variance)-7)/25*100,0,100);
-  const exposure=clamp(100-Math.abs(mean-132)*1.25-darkPct*1.6,0,100);
-  const glareScore=clamp(100-glarePct*13,0,100);
-  const mini=makeMini(gray,aw,ah,24,32);let stable=100;
-  if(lastMini){let diff=0;for(let i=0;i<mini.length;i++)diff+=Math.abs(mini[i]-lastMini[i]);diff/=mini.length;stable=clamp(100-diff*5.3,0,100)}lastMini=mini;
-  const score=Math.round(sharp*.36+exposure*.25+glareScore*.25+stable*.14);
-  const ready=score>=READY_SCORE&&sharp>=62&&exposure>=55&&glareScore>=62&&stable>=72;
-  const manual=score>=MANUAL_SCORE&&sharp>=42&&exposure>=38&&glareScore>=38;
-  latest={score,sharp,exposure,glareScore,glarePct,stable,ready,manual,mean};render();
-  if(ready)stableFrames++;else stableFrames=0;
-  if(autoEl.checked&&stableFrames>=9&&Date.now()-lastShot>2500){stableFrames=0;capture(true)}
-}
 function makeMini(gray,w,h,mw,mh){const out=new Float32Array(mw*mh);for(let yy=0;yy<mh;yy++)for(let xx=0;xx<mw;xx++){const x=Math.min(w-1,Math.floor((xx+.5)/mw*w)),y=Math.min(h-1,Math.floor((yy+.5)/mh*h));out[yy*mw+xx]=gray[y*w+x]}return out}
-function render(){
-  qualityEl.textContent=latest.score;
-  if(latest.ready){statusEl.textContent='READY';statusEl.className='status good';hintEl.textContent='Calidad lista. Si los 4 bordes están dentro de la banda, dispara.'}
-  else if(latest.manual){statusEl.textContent='MANUAL OK';statusEl.className='status';hintEl.textContent=latest.glareScore<55?'Mueve la luz: hay reflejo fuerte':latest.sharp<55?'Aléjate un poco y mantén el teléfono quieto':'No necesitas encajar exacto: deja los 4 bordes dentro de la banda.'}
-  else{statusEl.textContent='AJUSTAR';statusEl.className='status bad';hintEl.textContent=latest.sharp<42?'Falta enfoque · prueba a 25–35 cm':latest.exposure<38?'Mejora la iluminación':latest.glareScore<38?'Demasiado reflejo':'Mantén el teléfono quieto'}
-  captureBtn.disabled=!latest.manual;
-  setMetric('mSharp',Math.round(latest.sharp),cssState(latest.sharp,62,42));
-  setMetric('mExposure',Math.round(latest.exposure),cssState(latest.exposure,55,38));
-  setMetric('mGlare',latest.glarePct.toFixed(1)+'%',latest.glareScore>=62?'ok':latest.glareScore>=38?'warn':'bad');
-  setMetric('mStable',Math.round(latest.stable),cssState(latest.stable,72,45));
+
+function evaluateAngle(){
+  const p=profile(),base=currentSession?.baseline;
+  if(!orientation.available||orientation.gamma==null||orientation.beta==null)return {ok:true,text:'guía visual',score:75,soft:true};
+  if(!base){return {ok:true,text:'calibra en FF',score:78,soft:true};}
+  const dg=angleDiff(orientation.gamma,base.gamma),db=angleDiff(orientation.beta,base.beta);
+  if(p.kind==='flat'){
+    const err=Math.max(Math.abs(dg),Math.abs(db));return {ok:err<=8,text:`Δ ${err.toFixed(0)}°`,score:clamp(100-err*7,0,100),soft:false};
+  }
+  if(p.kind==='tiltLeft'){
+    const target=-18,err=Math.abs(dg-target);return {ok:dg<=-9&&dg>=-32,text:`L ${Math.abs(dg).toFixed(0)}°`,score:clamp(100-err*4,0,100),soft:false};
+  }
+  if(p.kind==='tiltRight'){
+    const target=18,err=Math.abs(dg-target);return {ok:dg>=9&&dg<=32,text:`R ${Math.abs(dg).toFixed(0)}°`,score:clamp(100-err*4,0,100),soft:false};
+  }
+  const magnitude=Math.max(Math.abs(dg),Math.abs(db));return {ok:magnitude>=8&&magnitude<=35,text:`tilt ${magnitude.toFixed(0)}°`,score:magnitude<8?clamp(magnitude/8*100,0,100):magnitude>35?clamp(100-(magnitude-35)*5,0,100):95,soft:false};
 }
+
+function analyze(){
+  if(video.readyState<2||!video.videoWidth)return;const vr=displayToVideoRect();if(!vr)return;
+  const aw=240,ah=Math.max(180,Math.round(aw*(vr.h/vr.w)));analysisCanvas.width=aw;analysisCanvas.height=ah;aCtx.drawImage(video,vr.x,vr.y,vr.w,vr.h,0,0,aw,ah);
+  const img=aCtx.getImageData(0,0,aw,ah),d=img.data;let sum=0,glare=0,dark=0;const gray=new Float32Array(aw*ah);
+  for(let i=0,p=0;i<d.length;i+=4,p++){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];gray[p]=y;sum+=y;if(y>247)glare++;if(y<12)dark++}
+  const mean=sum/gray.length,glarePct=100*glare/gray.length,darkPct=100*dark/gray.length;let lapSum=0,lapSq=0,n=0;
+  for(let y=1;y<ah-1;y+=2)for(let x=1;x<aw-1;x+=2){const i=y*aw+x,lap=4*gray[i]-gray[i-1]-gray[i+1]-gray[i-aw]-gray[i+aw];lapSum+=lap;lapSq+=lap*lap;n++}
+  const variance=Math.max(0,lapSq/n-(lapSum/n)**2),sharp=clamp((Math.sqrt(variance)-7)/25*100,0,100),exposure=clamp(100-Math.abs(mean-132)*1.25-darkPct*1.6,0,100);
+  const p=profile();let highlightScore;
+  if(p.kind==='surface'){
+    // Para superficie queremos una franja visible, pero no un hotspot quemado.
+    const target=2.2;highlightScore=glarePct<=target?clamp(58+(glarePct/target)*42,0,100):clamp(100-(glarePct-target)*8,0,100);
+  }else highlightScore=clamp(100-glarePct*13,0,100);
+  const mini=makeMini(gray,aw,ah,24,32);let stable=100;if(lastMini){let diff=0;for(let i=0;i<mini.length;i++)diff+=Math.abs(mini[i]-lastMini[i]);diff/=mini.length;stable=clamp(100-diff*5.3,0,100)}lastMini=mini;
+  const angle=evaluateAngle();
+  const weights=p.kind==='surface'?{s:.32,e:.21,g:.27,st:.12,a:.08}:{s:.35,e:.24,g:.22,st:.12,a:.07};
+  const score=Math.round(sharp*weights.s+exposure*weights.e+highlightScore*weights.g+stable*weights.st+angle.score*weights.a);
+  const baseReady=sharp>=(p.kind==='flat'?62:55)&&exposure>=50&&stable>=65;
+  const lightReady=p.kind==='surface'?(glarePct>=.35&&glarePct<=8.5):(highlightScore>=55);
+  const angleReady=angle.soft||angle.ok;
+  const ready=score>=76&&baseReady&&lightReady&&angleReady;
+  const manual=score>=52&&sharp>=40&&exposure>=36&&(p.kind!=='surface'||glarePct<=12);
+  latest={score,sharp,exposure,glareScore:highlightScore,glarePct,stable,ready,manual,angleOK:angleReady,angleText:angle.text,mean};render();
+  if(ready)stableFrames++;else stableFrames=0;if(autoEl.checked&&stableFrames>=8&&Date.now()-lastShot>2600){stableFrames=0;capture(true)}
+}
+
+function render(){
+  const p=profile();qualityEl.textContent=latest.score;angleBadge.textContent='Ángulo: '+latest.angleText;
+  if(latest.ready){statusEl.textContent='READY';statusEl.className='status good';hintEl.textContent=p.kind==='surface'?'Franja de luz útil + enfoque listo. Dispara.':'Toma válida para este perfil.'}
+  else if(latest.manual){statusEl.textContent='MANUAL OK';statusEl.className='status';
+    if(!latest.angleOK)hintEl.textContent=p.kind==='tiltLeft'?'Inclina más hacia la izquierda':p.kind==='tiltRight'?'Inclina más hacia la derecha':'Ajusta un poco el ángulo';
+    else if(p.kind==='surface'&&latest.glarePct<.35)hintEl.textContent='Busca una franja de luz sobre la superficie';
+    else if(p.kind==='surface'&&latest.glarePct>8.5)hintEl.textContent='Demasiada luz quemada · cambia el ángulo';
+    else hintEl.textContent='Puedes disparar manualmente o seguir ajustando.';
+  }else{statusEl.textContent='AJUSTAR';statusEl.className='status bad';hintEl.textContent=latest.sharp<40?'Falta enfoque · aléjate un poco':latest.exposure<36?'Mejora la iluminación':latest.stable<45?'Mantén el teléfono quieto':'Ajusta la toma según la guía'}
+  captureBtn.disabled=!latest.manual;
+  setMetric('mSharp',Math.round(latest.sharp),cssState(latest.sharp,60,40));setMetric('mExposure',Math.round(latest.exposure),cssState(latest.exposure,50,36));
+  setMetric('mGlare',latest.glarePct.toFixed(1)+'%',p.kind==='surface'?(latest.glarePct>=.35&&latest.glarePct<=8.5?'ok':latest.glarePct<=12?'warn':'bad'):(latest.glareScore>=55?'ok':latest.glareScore>=35?'warn':'bad'));
+  setMetric('mStable',Math.round(latest.stable),cssState(latest.stable,65,45));setMetric('mAngle',latest.angleText,latest.angleOK?'ok':'warn');
+}
+
 async function capture(auto=false){
-  if(!video.videoWidth)return;lastShot=Date.now();
-  const w=video.videoWidth,h=video.videoHeight;captureCanvas.width=w;captureCanvas.height=h;capCtx.drawImage(video,0,0,w,h);
-  const originalBlob=await canvasBlob(captureCanvas,.96);revoke(originalUrl);originalUrl=URL.createObjectURL(originalBlob);
-  const vr=displayToVideoRect();
-  let padX=vr.w*.035,padY=vr.h*.025,x=clamp(vr.x-padX,0,w),y=clamp(vr.y-padY,0,h),cw=clamp(vr.w+2*padX,1,w-x),ch=clamp(vr.h+2*padY,1,h-y);
-  cropCanvas.width=Math.round(cw);cropCanvas.height=Math.round(ch);cropCtx.drawImage(captureCanvas,x,y,cw,ch,0,0,cropCanvas.width,cropCanvas.height);
-  const cropBlob=await canvasBlob(cropCanvas,.96);revoke(cropUrl);cropUrl=URL.createObjectURL(cropBlob);
-  currentView='crop';updateResult();
-  document.getElementById('captureInfo').textContent=`${side} · ${protection} · ${auto?'Auto':'Manual'} · ORIGINAL ${w}×${h} · GUIDE-CROP ${cropCanvas.width}×${cropCanvas.height}. El crop NO corrige perspectiva ni altera el original.`;
+  if(!video.videoWidth)return;lastShot=Date.now();const w=video.videoWidth,h=video.videoHeight;captureCanvas.width=w;captureCanvas.height=h;capCtx.drawImage(video,0,0,w,h);
+  originalBlob=await canvasBlob(captureCanvas,.96);revoke(originalUrl);originalUrl=URL.createObjectURL(originalBlob);
+  const vr=displayToVideoRect(),padX=vr.w*.04,padY=vr.h*.03,x=clamp(vr.x-padX,0,w),y=clamp(vr.y-padY,0,h),cw=clamp(vr.w+2*padX,1,w-x),ch=clamp(vr.h+2*padY,1,h-y);
+  cropCanvas.width=Math.round(cw);cropCanvas.height=Math.round(ch);cropCtx.drawImage(captureCanvas,x,y,cw,ch,0,0,cropCanvas.width,cropCanvas.height);cropBlob=await canvasBlob(cropCanvas,.96);revoke(cropUrl);cropUrl=URL.createObjectURL(cropBlob);
+  pendingMetrics={...latest,auto,orientation:orientation.available?{beta:orientation.beta,gamma:orientation.gamma}:null,protection,timestamp:Date.now(),originalSize:[w,h],cropSize:[cropCanvas.width,cropCanvas.height]};
+  currentView='crop';updateResult();document.getElementById('resultTitle').textContent=profile().title;document.getElementById('captureInfo').textContent=`Quality ${latest.score}/100 · ${auto?'Auto':'Manual'} · ${protection} · ORIGINAL ${w}×${h} · GUIDE-CROP ${cropCanvas.width}×${cropCanvas.height}.`;
   document.getElementById('resultSheet').classList.remove('hidden');
 }
-function canvasBlob(c,q){return new Promise(r=>c.toBlob(r,'image/jpeg',q))}
-function revoke(u){if(u)try{URL.revokeObjectURL(u)}catch(e){}}
-function updateResult(){const crop=currentView==='crop';document.getElementById('resultImage').src=crop?cropUrl:originalUrl;document.getElementById('cropTab').classList.toggle('active',crop);document.getElementById('originalTab').classList.toggle('active',!crop);document.getElementById('downloadCrop').href=cropUrl;document.getElementById('downloadOriginal').href=originalUrl}
-async function share(){const src=currentView==='crop'?cropCanvas:captureCanvas;const blob=await canvasBlob(src,.96);const file=new File([blob],currentView==='crop'?'LXR-guide-crop.jpg':'LXR-original.jpg',{type:'image/jpeg'});if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'LXR Card Camera'})}catch(e){}}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click()}}
+function updateResult(){const crop=currentView==='crop';document.getElementById('resultImage').src=crop?cropUrl:originalUrl;document.getElementById('cropTab').classList.toggle('active',crop);document.getElementById('originalTab').classList.toggle('active',!crop)}
 
-let protIdx=0;const protModes=['RAW','SLEEVE','TOPLOADER'];
+async function savePendingAndNext(){
+  if(!currentSession||!originalBlob||!cropBlob)return;const p=profile();
+  const shot={key:`${currentSession.id}:${p.id}`,sessionId:currentSession.id,profileId:p.id,profileTitle:p.title,side:p.side,kind:p.kind,original:originalBlob,crop:cropBlob,metrics:pendingMetrics,createdAt:Date.now()};
+  await dbPut('shots',shot);savedShots.set(p.id,shot);
+  if(p.id==='front_flat'&&orientation.available&&orientation.beta!=null&&orientation.gamma!=null&&!currentSession.baseline){currentSession.baseline={beta:orientation.beta,gamma:orientation.gamma};}
+  const next=PROFILES.findIndex((q,i)=>i>currentIndex&&!savedShots.has(q.id));
+  if(savedShots.size===PROFILES.length){currentSession.completedAt=Date.now();currentSession.currentIndex=PROFILES.length-1;}
+  else currentSession.currentIndex=next>=0?next:PROFILES.findIndex(q=>!savedShots.has(q.id));
+  currentIndex=Math.max(0,currentSession.currentIndex);currentSession.protection=protection;await dbPut('sessions',currentSession);
+  document.getElementById('resultSheet').classList.add('hidden');lastMini=null;stableFrames=0;updateUI();
+  if(savedShots.size===PROFILES.length)await showGallery();
+}
+
+async function shareCurrentPreview(){
+  const blob=currentView==='crop'?cropBlob:originalBlob;if(!blob)return;const p=profile();const file=new File([blob],`LXR-${p.id}-${currentView}.jpg`,{type:'image/jpeg'});
+  if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'LXR Card Camera'})}catch(e){}}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click()}
+}
+
+async function showGallery(){
+  if(!currentSession)await loadOrCreateSession(false);const shots=await getSessionShots(currentSession.id);savedShots=new Map(shots.map(s=>[s.profileId,s]));
+  const list=document.getElementById('galleryList');list.innerHTML='';
+  if(!shots.length)list.innerHTML='<div class="empty">Todavía no hay capturas guardadas.</div>';
+  for(const p of PROFILES){const s=savedShots.get(p.id);if(!s)continue;const url=URL.createObjectURL(s.crop);const card=document.createElement('div');card.className='shot-card';card.innerHTML=`<img alt="${p.title}"><div><h3>${p.title}</h3><p>Quality ${s.metrics?.score??'—'}/100 · ${s.metrics?.protection||''}<br>${new Date(s.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</p></div><div class="check">✓</div>`;card.querySelector('img').src=url;card.addEventListener('click',()=>openSavedShot(s,p));list.appendChild(card)}
+  document.getElementById('gallerySummary').textContent=`${savedShots.size}/6 perfiles completos · sesión ${new Date(currentSession.createdAt).toLocaleString()}. Las fotos originales están guardadas localmente.`;
+  document.getElementById('gallerySheet').classList.remove('hidden');
+}
+function openSavedShot(s,p){revoke(originalUrl);revoke(cropUrl);originalBlob=s.original;cropBlob=s.crop;originalUrl=URL.createObjectURL(originalBlob);cropUrl=URL.createObjectURL(cropBlob);currentView='crop';updateResult();document.getElementById('resultTitle').textContent=p.title+' · guardada';document.getElementById('captureInfo').textContent=`Quality ${s.metrics?.score??'—'}/100 · guardada en esta sesión.`;document.getElementById('saveNextBtn').classList.add('hidden');document.getElementById('retakeBtn').textContent='Cerrar vista';document.getElementById('resultSheet').classList.remove('hidden')}
+
+async function shareSession(){
+  if(!currentSession)return;const shots=await getSessionShots(currentSession.id);const ordered=PROFILES.map(p=>shots.find(s=>s.profileId===p.id)).filter(Boolean);if(!ordered.length)return;
+  const files=ordered.map((s,i)=>new File([s.original],`${String(i+1).padStart(2,'0')}-${s.profileId}-ORIGINAL.jpg`,{type:'image/jpeg'}));
+  if(navigator.share&&navigator.canShare?.({files})){try{await navigator.share({files,title:'LXR Pre-Grade Session'})}catch(e){}}
+  else{for(const f of files){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();await new Promise(r=>setTimeout(r,180))}}
+}
+
+async function deleteCurrentSession(){
+  if(!currentSession)return;if(!confirm('¿Borrar esta sesión y todas sus fotos guardadas?'))return;await clearSessionShots(currentSession.id);await dbDelete('sessions',currentSession.id);currentSession=null;savedShots=new Map();await createNewSession();document.getElementById('gallerySheet').classList.add('hidden');
+}
+async function newSessionFlow(){
+  if(currentSession&&savedShots.size&&!confirm('¿Crear una sesión nueva? La actual seguirá guardada hasta que la borres.'))return;await createNewSession();document.getElementById('gallerySheet').classList.add('hidden');document.getElementById('startScreen').classList.add('hidden');lastMini=null;stableFrames=0;
+}
+
+function cycleProfile(){currentIndex=(currentIndex+1)%PROFILES.length;currentSession.currentIndex=currentIndex;dbPut('sessions',currentSession);lastMini=null;stableFrames=0;updateUI()}
+
+const protModes=['RAW','SLEEVE','TOPLOADER'];
 document.getElementById('startBtn').addEventListener('click',startCamera);
-document.getElementById('restartBtn').addEventListener('click',()=>{lastMini=null;stableFrames=0;startCamera()});
+document.getElementById('newSessionBtn').addEventListener('click',async()=>{await createNewSession();await startCamera()});
+document.getElementById('galleryStartBtn').addEventListener('click',async()=>{await loadOrCreateSession(false);await showGallery()});
+document.getElementById('galleryBtn').addEventListener('click',showGallery);
+document.getElementById('skipBtn').addEventListener('click',cycleProfile);
 captureBtn.addEventListener('click',()=>capture(false));
-document.getElementById('sideBtn').addEventListener('click',e=>{side=side==='FRONT'?'BACK':'FRONT';e.currentTarget.textContent=side});
-document.getElementById('protectionBtn').addEventListener('click',e=>{protIdx=(protIdx+1)%protModes.length;protection=protModes[protIdx];e.currentTarget.textContent=protection==='RAW'?'Raw card':protection==='SLEEVE'?'Sleeve':'Top loader';layoutGuide()});
+document.getElementById('protectionBtn').addEventListener('click',e=>{protIdx=(protIdx+1)%protModes.length;protection=protModes[protIdx];e.currentTarget.textContent=protection==='RAW'?'Raw card':protection==='SLEEVE'?'Sleeve':'Top loader';if(currentSession){currentSession.protection=protection;dbPut('sessions',currentSession)}layoutGuide()});
 document.getElementById('detailsBtn').addEventListener('click',()=>document.getElementById('metrics').classList.toggle('show'));
 document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpSheet').classList.remove('hidden'));
 document.getElementById('closeHelp').addEventListener('click',()=>document.getElementById('helpSheet').classList.add('hidden'));
-document.getElementById('closeResult').addEventListener('click',()=>document.getElementById('resultSheet').classList.add('hidden'));
-document.getElementById('retakeBtn').addEventListener('click',()=>document.getElementById('resultSheet').classList.add('hidden'));
-document.getElementById('cropTab').addEventListener('click',()=>{currentView='crop';updateResult()});
-document.getElementById('originalTab').addEventListener('click',()=>{currentView='original';updateResult()});
-document.getElementById('shareBtn').addEventListener('click',share);
-layoutGuide();
+document.getElementById('closeResult').addEventListener('click',()=>{document.getElementById('resultSheet').classList.add('hidden');document.getElementById('saveNextBtn').classList.remove('hidden');document.getElementById('retakeBtn').textContent='Repetir esta toma'});
+document.getElementById('retakeBtn').addEventListener('click',()=>{document.getElementById('resultSheet').classList.add('hidden');document.getElementById('saveNextBtn').classList.remove('hidden');document.getElementById('retakeBtn').textContent='Repetir esta toma'});
+document.getElementById('saveNextBtn').addEventListener('click',savePendingAndNext);
+document.getElementById('cropTab').addEventListener('click',()=>{currentView='crop';updateResult()});document.getElementById('originalTab').addEventListener('click',()=>{currentView='original';updateResult()});document.getElementById('sharePreviewBtn').addEventListener('click',shareCurrentPreview);
+document.getElementById('closeGallery').addEventListener('click',()=>document.getElementById('gallerySheet').classList.add('hidden'));
+document.getElementById('shareSessionBtn').addEventListener('click',shareSession);document.getElementById('deleteSessionBtn').addEventListener('click',deleteCurrentSession);document.getElementById('newFromGalleryBtn').addEventListener('click',newSessionFlow);
+
+loadOrCreateSession(false).then(updateUI).catch(()=>updateUI());
 })();
 </script>
 </body>
